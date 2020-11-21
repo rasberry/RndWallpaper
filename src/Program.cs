@@ -8,12 +8,15 @@ namespace RndWallpaper
 	{
 		static void Main(string[] args)
 		{
-			var vmaj = Environment.OSVersion.Version.Major;
-			var vmin = Environment.OSVersion.Version.Minor;
-
-			Console.WriteLine($"ver = {Environment.OSVersion} maj={vmaj} min={vmin}");
-			Console.WriteLine($"hver = {Helpers.GetOSName()}");
-			return;
+			//TODO allow either directory or file to be specified
+			//add actual options and usage, etc..
+			//add option for wallpaper style
+			//figure out what file types are supported
+			//maybe add option to specify random seed .. ?
+			//maybe add option to enable changing accent color setting ? (not sure if this is possible)
+			//	maybe AutoColorization reg value ?
+			//note: accent seems to change for me when changing background (and accent change option is enabled)
+			//
 
 			if (args.Length < 1) {
 				Console.WriteLine("must specify source folder for pictures");
