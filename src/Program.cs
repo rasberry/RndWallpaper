@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace RndWallpaper
@@ -8,9 +9,8 @@ namespace RndWallpaper
 	{
 		static void Main(string[] args)
 		{
-			if (!ExecutionMode.IsRunningWithIdentity()) {
-			}
-
+			//if (!ExecutionMode.IsRunningWithIdentity()) {
+			//}
 
 			var c = Helpers.GetAccentColor();
 			Console.WriteLine($"accent = {c}");
@@ -26,6 +26,11 @@ namespace RndWallpaper
 			//Color c1 = Helpers.ColorRefToColor(pref.Color1);
 			//Color c2 = Helpers.ColorRefToColor(pref.Color2);
 			//Console.WriteLine($"pref 1={c1} {pref.Color1,0:X} 2={c2} {pref.Color2,0:X}");
+
+			var mp = Environment.SpecialFolder.MyPictures;
+			Console.WriteLine(mp);
+
+			//Helpers.SetBackground(
 		}
 
 	}
