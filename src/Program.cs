@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Drawing;
 using System.IO;
-using System.Threading.Tasks;
+using System.Linq;
 
 namespace RndWallpaper
 {
@@ -9,30 +8,45 @@ namespace RndWallpaper
 	{
 		static void Main(string[] args)
 		{
-			//if (!ExecutionMode.IsRunningWithIdentity()) {
+			var vmaj = Environment.OSVersion.Version.Major;
+			var vmin = Environment.OSVersion.Version.Minor;
+
+			Console.WriteLine($"ver = {Environment.OSVersion} maj={vmaj} min={vmin}");
+			Console.WriteLine($"hver = {Helpers.GetOSName()}");
+			return;
+
+			if (args.Length < 1) {
+				Console.WriteLine("must specify source folder for pictures");
+				return;
+			}
+			string src = args[0];
+			if (!Directory.Exists(src)) {
+				Console.WriteLine($" folder \"{src}\" doesn't exist");
+				return;
+			}
+
+			var rawList = Directory.GetFileSystemEntries(src);
+			var imgList = rawList.Where(file => {
+				var norm = file.ToLowerInvariant();
+				if (norm.EndsWith(".png")) { return true; }
+				if (norm.EndsWith(".jpg")) { return true; }
+				return false;
+			});
+
+			//foreach(var img in imgList) {
+			//	Console.WriteLine(img);
 			//}
+
+			var rnd = new Random();
+			int index = rnd.Next(imgList.Count());
+
+			string file = imgList.ElementAt(index);
+			Console.WriteLine($"setting background to {file}");
+			Helpers.SetBackground(file);
 
 			var c = Helpers.GetAccentColor();
 			Console.WriteLine($"accent = {c}");
-
-			var r = Helpers.SetWallpaperAsync(args[0]).Result;
-			Console.WriteLine("result = "+r);
-
-			//Helpers.DwmGetColorizationColor(out uint ucolor,out bool doBlend);
-			//Color c = Helpers.DwmColorToColor(ucolor);
-			//Console.WriteLine($"color is {c} {ucolor,0:X} doBlend {doBlend}");
-
-			//Helpers.GetUserColorPreference(out Helpers.ImmersiveColorPreference pref, false);
-			//Color c1 = Helpers.ColorRefToColor(pref.Color1);
-			//Color c2 = Helpers.ColorRefToColor(pref.Color2);
-			//Console.WriteLine($"pref 1={c1} {pref.Color1,0:X} 2={c2} {pref.Color2,0:X}");
-
-			var mp = Environment.SpecialFolder.MyPictures;
-			Console.WriteLine(mp);
-
-			//Helpers.SetBackground(
 		}
-
 	}
 }
 

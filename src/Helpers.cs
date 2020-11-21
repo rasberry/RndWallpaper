@@ -12,30 +12,6 @@ namespace RndWallpaper
 {
 	public static class Helpers
 	{
-		// https://docs.microsoft.com/en-us/uwp/api/Windows.System.UserProfile.UserProfilePersonalizationSettings?view=winrt-19041
-		public static async Task<PickReason> SetWallpaperAsync(string fileName)
-		{
-			if (!File.Exists(fileName)) {
-				return PickReason.FileDoesNotExist;
-			}
-
-			if (!UserProfilePersonalizationSettings.IsSupported()) {
-				return PickReason.NotSupported;
-			}
-
-			StorageFile source = await StorageFile.GetFileFromPathAsync(fileName);
-			StorageFile storage = await source.CopyAsync(ApplicationData.Current.LocalFolder);
-
-			if (!storage.IsAvailable) {
-				return PickReason.FileNotAvailable;
-			}
-
-			var profileSettings = UserProfilePersonalizationSettings.Current;
-			bool success = await profileSettings.TrySetWallpaperImageAsync(storage);
-
-			return success ? PickReason.Success : PickReason.SetWallpaperFailed;
-		}
-
 		public enum UAction
 		{
 			SPI_SETDESKWALLPAPER = 20,
@@ -52,30 +28,41 @@ namespace RndWallpaper
 		[DllImport("user32", CharSet = CharSet.Unicode)]
 		public static extern int SystemParametersInfo(UAction uAction, int uParam, StringBuilder lpvParam, SPIF fuWinIni);
 
-		public static int SetBackground(string fileName)
+		public static int SetBackground(string fileName, PickWallpaperStyle style = PickWallpaperStyle.Fit)
 		{
-			int result = 0;
-			if (File.Exists(fileName))
+			if (!File.Exists(fileName)) { return 0; }
+			switch(style)
 			{
-				string oSName = GetOSName();
-				string options = GetOptions("WallpaperStyle");
-				if (!options.Equals("10") && !options.Equals("22"))
-				{
-					if (oSName == "0" || oSName == "7" || oSName == "8" || oSName == "8.1" || MonitorCount > 1)
-					{
-						SetOptions("WallpaperStyle", "10");
-					}
-					else
-					{
-						SetOptions("WallpaperStyle", "22");
-					}
-				}
+			case PickWallpaperStyle.Tile:
+				SetOptions("WallpaperStyle", "0");
+				SetOptions("TileWallpaper", "1");
+				break;
+			case PickWallpaperStyle.Center:
+				SetOptions("WallpaperStyle", "0");
 				SetOptions("TileWallpaper", "0");
-				SetOptions("Wallpaper", fileName);
-				StringBuilder lpvParam = new StringBuilder(fileName);
-				SPIF fWinIni = SPIF.UPDATEINIFILE | SPIF.SENDWININICHANGE;
-				result = SystemParametersInfo(UAction.SPI_SETDESKWALLPAPER, 0, lpvParam, fWinIni);
+				break;
+			case PickWallpaperStyle.Stretch:
+				SetOptions("WallpaperStyle", "2");
+				SetOptions("TileWallpaper", "0");
+				break;
+			case PickWallpaperStyle.Fit:
+				SetOptions("WallpaperStyle", "6");
+				SetOptions("TileWallpaper", "0");
+				break;
+			case PickWallpaperStyle.Fill:
+				SetOptions("WallpaperStyle", "10");
+				SetOptions("TileWallpaper", "0");
+				break;
+			case PickWallpaperStyle.Span:
+				SetOptions("WallpaperStyle", "22");
+				SetOptions("TileWallpaper", "0");
+				break;
 			}
+
+			SetOptions("Wallpaper", fileName);
+			StringBuilder lpvParam = new StringBuilder(fileName);
+			SPIF fWinIni = SPIF.UPDATEINIFILE | SPIF.SENDWININICHANGE;
+			int result = SystemParametersInfo(UAction.SPI_SETDESKWALLPAPER, 0, lpvParam, fWinIni);
 			return result;
 		}
 
@@ -102,43 +89,6 @@ namespace RndWallpaper
 				result = false;
 			}
 			return result;
-		}
-
-		public static string GetOSName()
-		{
-			string text = "";
-			string text2 = "";
-			RegistryKey registryKey = Registry.LocalMachine.OpenSubKey(
-				"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion");
-			if (registryKey != null)
-			{
-				text = registryKey.GetValue("CurrentVersion", "").ToString();
-				string text3 = registryKey.GetValue("InstallationType", "").ToString();
-				text2 = registryKey.GetValue("ProductName", "").ToString();
-				if (text3.Contains("Server") && text2.Contains("Server"))
-				{
-					return "0";
-				}
-				if (text.Equals("6.1"))
-				{
-					return "7";
-				}
-				if (text.Equals("6.2"))
-				{
-					return "8";
-				}
-				if (text.Equals("6.3"))
-				{
-					string mv = registryKey.GetValue("CurrentMajorVersionNumber", "").ToString();
-					if (mv.Equals("10"))
-					{
-						return "10";
-					}
-					return "8.1";
-				}
-				registryKey.Close();
-			}
-			return "0";
 		}
 
 		static int NumberOfMonitors = -1;
