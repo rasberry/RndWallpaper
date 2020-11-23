@@ -46,7 +46,7 @@ namespace RndWallpaper
 			}
 
 			Log.Message($"setting background to {file}");
-			Helpers.SetBackground(file);
+			Helpers.SetBackground(file, Style);
 
 			//var c = Helpers.GetAccentColor();
 			//Console.WriteLine($"accent = {c}");
