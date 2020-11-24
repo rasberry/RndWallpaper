@@ -55,7 +55,7 @@ namespace RndWallpaper
 		static bool ParseArgs(string[] args)
 		{
 			var p = new Params(args);
-			if (p.Default("-s",out Style, PickWallpaperStyle.Fit).IsInvalid()) {
+			if (p.Default("-s",out Style, PickWallpaperStyle.Fill).IsInvalid()) {
 				return false;
 			}
 			if (p.Default("-rs", out RndSeed).IsInvalid()) {
@@ -82,7 +82,7 @@ namespace RndWallpaper
 			Log.Message(
 				   $"{nameof(RndWallpaper)} [options] (path of image or folder)"
 				+ "\nOptions:"
-				+ "\n -s (style)         Style of wallpaper (default 'Fit')"
+				+ "\n -s (style)         Style of wallpaper (default 'Fill')"
 				+ "\n -rs (integer)      Random seed value (default system suplied)"
 				// + "\n -ta (boolean)      Enable or disable updating accent with the background (default leave as-is)"
 				+ "\n"

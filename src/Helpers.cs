@@ -28,7 +28,7 @@ namespace RndWallpaper
 		[DllImport("user32", CharSet = CharSet.Unicode)]
 		public static extern int SystemParametersInfo(UAction uAction, int uParam, StringBuilder lpvParam, SPIF fuWinIni);
 
-		public static int SetBackground(string fileName, PickWallpaperStyle style = PickWallpaperStyle.Fit)
+		public static int SetBackground(string fileName, PickWallpaperStyle style = PickWallpaperStyle.Fill)
 		{
 			if (!File.Exists(fileName)) { return 0; }
 			switch(style)
