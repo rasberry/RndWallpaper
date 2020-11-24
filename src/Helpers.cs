@@ -2,7 +2,9 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Win32;
 using Windows.Storage;
 using Windows.System.UserProfile;
 
@@ -10,29 +12,109 @@ namespace RndWallpaper
 {
 	public static class Helpers
 	{
-		// https://docs.microsoft.com/en-us/uwp/api/Windows.System.UserProfile.UserProfilePersonalizationSettings?view=winrt-19041
-		public static async Task<PickReason> SetWallpaperAsync(string fileName)
+		public enum UAction
 		{
-			if (!File.Exists(fileName)) {
-				return PickReason.FileDoesNotExist;
-			}
-
-			if (!UserProfilePersonalizationSettings.IsSupported()) {
-				return PickReason.NotSupported;
-			}
-
-			StorageFile source = await StorageFile.GetFileFromPathAsync(fileName);
-			StorageFile storage = await source.CopyAsync(ApplicationData.Current.LocalFolder);
-
-			if (!storage.IsAvailable) {
-				return PickReason.FileNotAvailable;
-			}
-
-			var profileSettings = UserProfilePersonalizationSettings.Current;
-			bool success = await profileSettings.TrySetWallpaperImageAsync(storage);
-
-			return success ? PickReason.Success : PickReason.SetWallpaperFailed;
+			SPI_SETDESKWALLPAPER = 20,
+			SPI_GETDESKWALLPAPER = 115
 		}
+
+		[Flags]
+		public enum SPIF
+		{
+			UPDATEINIFILE = 0x01,
+			SENDWININICHANGE = 0x02
+		}
+
+		[DllImport("user32", CharSet = CharSet.Unicode)]
+		public static extern int SystemParametersInfo(UAction uAction, int uParam, StringBuilder lpvParam, SPIF fuWinIni);
+
+		public static int SetBackground(string fileName, PickWallpaperStyle style = PickWallpaperStyle.Fill)
+		{
+			if (!File.Exists(fileName)) { return 0; }
+			switch(style)
+			{
+			case PickWallpaperStyle.Tile:
+				SetOptions("WallpaperStyle", "0");
+				SetOptions("TileWallpaper", "1");
+				break;
+			case PickWallpaperStyle.Center:
+				SetOptions("WallpaperStyle", "0");
+				SetOptions("TileWallpaper", "0");
+				break;
+			case PickWallpaperStyle.Stretch:
+				SetOptions("WallpaperStyle", "2");
+				SetOptions("TileWallpaper", "0");
+				break;
+			case PickWallpaperStyle.Fit:
+				SetOptions("WallpaperStyle", "6");
+				SetOptions("TileWallpaper", "0");
+				break;
+			case PickWallpaperStyle.Fill:
+				SetOptions("WallpaperStyle", "10");
+				SetOptions("TileWallpaper", "0");
+				break;
+			case PickWallpaperStyle.Span:
+				SetOptions("WallpaperStyle", "22");
+				SetOptions("TileWallpaper", "0");
+				break;
+			}
+
+			SetOptions("Wallpaper", fileName);
+			StringBuilder lpvParam = new StringBuilder(fileName);
+			SPIF fWinIni = SPIF.UPDATEINIFILE | SPIF.SENDWININICHANGE;
+			int result = SystemParametersInfo(UAction.SPI_SETDESKWALLPAPER, 0, lpvParam, fWinIni);
+			return result;
+		}
+
+		public static string GetOptions(string optionsName)
+		{
+			RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("Control Panel\\Desktop", writable: true);
+			if (registryKey != null)
+			{
+				return registryKey.GetValue(optionsName, "0").ToString();
+			}
+			return "0";
+		}
+
+		public static bool SetOptions(string optionsName, string optionsData)
+		{
+			bool result = true;
+			RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("Control Panel\\Desktop", writable: true);
+			if (registryKey != null)
+			{
+				registryKey.SetValue(optionsName, optionsData);
+			}
+			else
+			{
+				result = false;
+			}
+			return result;
+		}
+
+		static int NumberOfMonitors = -1;
+		const int SM_CMONITORS = 80;
+		public static bool MultiMonitorSupport
+		{
+			get {
+				if (NumberOfMonitors < 0) {
+					NumberOfMonitors = GetSystemMetrics(SM_CMONITORS);
+				}
+				return NumberOfMonitors > 0;
+			}
+		}
+
+		public static int MonitorCount
+		{
+			get {
+				if (MultiMonitorSupport) {
+					return NumberOfMonitors;
+				}
+				return 1;
+			}
+		}
+
+		[DllImport("user32", CharSet = CharSet.Auto, ExactSpelling = true)]
+		public static extern int GetSystemMetrics(int nIndex);
 
 		public static Color GetAccentColor()
 		{
@@ -40,7 +122,6 @@ namespace RndWallpaper
 			var color = x.GetColorValue(Windows.UI.ViewManagement.UIColorType.Accent);
 			return Color.FromArgb(color.A,color.R,color.G,color.B);
 		}
-
 
 		public static Color ColorRefToColor(uint colorRef)
 		{

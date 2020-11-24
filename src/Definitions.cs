@@ -8,4 +8,15 @@ namespace RndWallpaper
 		SetWallpaperFailed,
 		FileNotAvailable
 	}
+
+	public enum PickWallpaperStyle
+	{
+		None = 0,
+		Tile,
+		Center,
+		Stretch,
+		Fit,
+		Fill,
+		Span
+	}
 }
