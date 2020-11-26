@@ -8,6 +8,20 @@ namespace RndWallpaper
 	{
 		static void Main(string[] args)
 		{
+			try {
+				MainMain(args);
+			}
+			catch(Exception e) {
+				#if DEBUG
+				Log.Error(e.ToString());
+				#else
+				Log.Error(e.Message);
+				#endif
+			}
+		}
+
+		static void MainMain(string[] args)
+		{
 			if (args.Length < 1) {
 				Usage();
 				return;
@@ -26,8 +40,14 @@ namespace RndWallpaper
 					return false;
 				});
 
+				int count = imgList.Count();
+				if (count < 1) {
+					Log.Error($"No images found in {PicPath}");
+					return;
+				}
+
 				var rnd = RndSeed.HasValue ? new Random(RndSeed.Value) : new Random();
-				int index = rnd.Next(imgList.Count());
+				int index = rnd.Next(count);
 
 				file = imgList.ElementAt(index);
 			}
@@ -35,8 +55,15 @@ namespace RndWallpaper
 				file = PicPath;
 			}
 
+			if (DelayMS > 0) {
+				Log.Message($"setting background in {Math.Round(DelayMS/1000.0,3)} seconds");
+				System.Threading.Thread.Sleep(DelayMS);
+			}
 			Log.Message($"setting background to {file}");
-			Helpers.SetBackground(file, Style);
+			int result = Helpers.SetBackground(file, Style);
+			if (result != 0) {
+				Log.Error("setting background failed");
+			}
 
 			//var c = Helpers.GetAccentColor();
 			//Console.WriteLine($"accent = {c}");
@@ -51,10 +78,16 @@ namespace RndWallpaper
 			if (p.Default("-rs", out RndSeed).IsInvalid()) {
 				return false;
 			}
+			if (p.Default("-d", out double delaySec).IsInvalid()) {
+				return false;
+			}
+			DelayMS = (int)Math.Round(delaySec * 1000.0,3);
 
 			if (p.Expect(out PicPath,"image or folder path").IsBad()) {
 				return false;
 			}
+			//fully qualify the path
+			PicPath = Path.GetFullPath(PicPath);
 
 			if (Directory.Exists(PicPath)) {
 				IsFolder = true;
@@ -72,6 +105,7 @@ namespace RndWallpaper
 			Log.Message(
 				   $"{nameof(RndWallpaper)} [options] (path of image or folder)"
 				+ "\nOptions:"
+				+ "\n -d (number)        Delay number of seconds (default 0)"
 				+ "\n -s (style)         Style of wallpaper (default 'Fill')"
 				+ "\n -rs (integer)      Random seed value (default system suplied)"
 				// + "\n -ta (boolean)      Enable or disable updating accent with the background (default leave as-is)"
@@ -89,6 +123,7 @@ namespace RndWallpaper
 		static int? RndSeed = null;
 		static string PicPath = null;
 		static bool IsFolder = false;
+		static int DelayMS = 0;
 
 	}
 }

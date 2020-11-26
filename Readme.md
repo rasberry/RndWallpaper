@@ -5,6 +5,7 @@ A utility for changing the desktop background image for in Windows
 ```
 RndWallpaper [options] (path of image or folder)
 Options:
+ -d (number)        Delay number of seconds (default 0)
  -s (style)         Style of wallpaper (default 'Fill')
  -rs (integer)      Random seed value (default system suplied)
 

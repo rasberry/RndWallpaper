@@ -25,8 +25,9 @@ namespace RndWallpaper
 			SENDWININICHANGE = 0x02
 		}
 
-		[DllImport("user32", CharSet = CharSet.Unicode)]
-		public static extern int SystemParametersInfo(UAction uAction, int uParam, StringBuilder lpvParam, SPIF fuWinIni);
+		[DllImport("user32", CharSet = CharSet.Auto, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		static extern bool SystemParametersInfo(UAction uiAction, uint uiParam, String pvParam, SPIF fWinIni);
 
 		public static int SetBackground(string fileName, PickWallpaperStyle style = PickWallpaperStyle.Fill)
 		{
@@ -60,10 +61,13 @@ namespace RndWallpaper
 			}
 
 			SetOptions("Wallpaper", fileName);
-			StringBuilder lpvParam = new StringBuilder(fileName);
 			SPIF fWinIni = SPIF.UPDATEINIFILE | SPIF.SENDWININICHANGE;
-			int result = SystemParametersInfo(UAction.SPI_SETDESKWALLPAPER, 0, lpvParam, fWinIni);
-			return result;
+			bool result = SystemParametersInfo(UAction.SPI_SETDESKWALLPAPER, 0, fileName, fWinIni);
+			if (!result) {
+				int error = Marshal.GetLastWin32Error();
+				return error;
+			}
+			return 0;
 		}
 
 		public static string GetOptions(string optionsName)
