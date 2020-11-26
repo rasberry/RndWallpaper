@@ -14,6 +14,10 @@ Available Styles:
  Fill
  Span
 
+# Build #
+* see https://github.com/dotnet/runtimelab/tree/feature/NativeAOT/samples/HelloWorld
+* ```dotnet publish -r win-x64 -c release```
+
 ## TODO ##
 * add more platforms (linux?)
 * add an option to choose sequential images instead of just random ones from a folder
@@ -22,4 +26,3 @@ Available Styles:
 * maybe add an information action which shows current settings
 * maybe add a change settings action
 * maybe add a way to download images from some sources (not sure where tho)
-* 
