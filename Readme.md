@@ -2,6 +2,7 @@
 A utility for changing the desktop background image for in Windows
 
 ## Usage ##
+```
 RndWallpaper [options] (path of image or folder)
 Options:
  -s (style)         Style of wallpaper (default 'Fill')
@@ -13,6 +14,7 @@ Available Styles:
  Fit
  Fill
  Span
+```
 
 # Build #
 * see https://github.com/dotnet/runtimelab/tree/feature/NativeAOT/samples/HelloWorld
