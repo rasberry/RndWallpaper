@@ -116,13 +116,6 @@ namespace RndWallpaper
 		[DllImport("user32", CharSet = CharSet.Auto, ExactSpelling = true)]
 		public static extern int GetSystemMetrics(int nIndex);
 
-		public static Color GetAccentColor()
-		{
-			var x = new Windows.UI.ViewManagement.UISettings();
-			var color = x.GetColorValue(Windows.UI.ViewManagement.UIColorType.Accent);
-			return Color.FromArgb(color.A,color.R,color.G,color.B);
-		}
-
 		public static Color ColorRefToColor(uint colorRef)
 		{
 			//COLORREF is 0x00bbggrr
