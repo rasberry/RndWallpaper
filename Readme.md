@@ -21,3 +21,5 @@ Available Styles:
 * add support for choosing a monitor for multi-monitor setups
 * maybe add an information action which shows current settings
 * maybe add a change settings action
+* maybe add a way to download images from some sources (not sure where tho)
+* 
