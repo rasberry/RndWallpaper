@@ -60,10 +60,18 @@ namespace RndWallpaper
 				System.Threading.Thread.Sleep(DelayMS);
 			}
 			Log.Message($"setting background to {file}");
-			int result = Helpers.SetBackground(file, Style);
-			if (result != 0) {
-				Log.Error("setting background failed");
+			//int result = Helpers.SetBackground(file, Style);
+			var wallpaper = (IDesktopWallpaper)(new DesktopWallpaperClass());
+			uint mcount = wallpaper.GetMonitorDevicePathCount();
+
+			for(uint m=0; m<mcount; m++) {
+				string mname = wallpaper.GetMonitorDevicePathAt(m);
+				Log.Message($"M {m} = {mname}");
 			}
+
+			//if (result != 0) {
+			//	Log.Error("setting background failed");
+			//}
 
 			//var c = Helpers.GetAccentColor();
 			//Console.WriteLine($"accent = {c}");
@@ -108,6 +116,10 @@ namespace RndWallpaper
 				+ "\n -d (number)        Delay number of seconds (default 0)"
 				+ "\n -s (style)         Style of wallpaper (default 'Fill')"
 				+ "\n -rs (integer)      Random seed value (default system suplied)"
+				+ "\n -op                Apply image only to the primary monitor"
+				+ "\n -om (name)         Apply image to monitor with given name"
+				+ "\n -os                Apply the same image to all monitors (if folder given)"
+				+ "\n -?? (todo figure out what options to use for this"
 				// + "\n -ta (boolean)      Enable or disable updating accent with the background (default leave as-is)"
 				+ "\n"
 				+ "\nAvailable Styles:"

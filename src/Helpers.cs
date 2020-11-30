@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Microsoft.Win32;
 using Windows.Storage;
 using Windows.System.UserProfile;
@@ -12,23 +13,6 @@ namespace RndWallpaper
 {
 	public static class Helpers
 	{
-		public enum UAction
-		{
-			SPI_SETDESKWALLPAPER = 20,
-			SPI_GETDESKWALLPAPER = 115
-		}
-
-		[Flags]
-		public enum SPIF
-		{
-			UPDATEINIFILE = 0x01,
-			SENDWININICHANGE = 0x02
-		}
-
-		[DllImport("user32", CharSet = CharSet.Auto, SetLastError = true)]
-		[return: MarshalAs(UnmanagedType.Bool)]
-		static extern bool SystemParametersInfo(UAction uiAction, uint uiParam, String pvParam, SPIF fWinIni);
-
 		public static int SetBackground(string fileName, PickWallpaperStyle style = PickWallpaperStyle.Fill)
 		{
 			if (!File.Exists(fileName)) { return 0; }
@@ -62,7 +46,7 @@ namespace RndWallpaper
 
 			SetOptions("Wallpaper", fileName);
 			SPIF fWinIni = SPIF.UPDATEINIFILE | SPIF.SENDWININICHANGE;
-			bool result = SystemParametersInfo(UAction.SPI_SETDESKWALLPAPER, 0, fileName, fWinIni);
+			bool result = WindowsMethods.SystemParametersInfo(UAction.SPI_SETDESKWALLPAPER, 0, fileName, fWinIni);
 			if (!result) {
 				int error = Marshal.GetLastWin32Error();
 				return error;
@@ -101,7 +85,7 @@ namespace RndWallpaper
 		{
 			get {
 				if (NumberOfMonitors < 0) {
-					NumberOfMonitors = GetSystemMetrics(SM_CMONITORS);
+					NumberOfMonitors = WindowsMethods.GetSystemMetrics(SM_CMONITORS);
 				}
 				return NumberOfMonitors > 0;
 			}
@@ -116,9 +100,6 @@ namespace RndWallpaper
 				return 1;
 			}
 		}
-
-		[DllImport("user32", CharSet = CharSet.Auto, ExactSpelling = true)]
-		public static extern int GetSystemMetrics(int nIndex);
 
 		public static Color ColorRefToColor(uint colorRef)
 		{
@@ -141,21 +122,35 @@ namespace RndWallpaper
 			return Color.FromArgb(a,r,g,b);
 		}
 
-		[StructLayout(LayoutKind.Sequential)]
-		public struct ImmersiveColorPreference
+/*
+		public static void GetMonitorInfo()
 		{
-			public uint Color1; //COLORREF - StartColorMenu
-			public uint Color2; //COLORREF - AccentColorMenu
+			//MONITORINFO lPrimaryScreenInfo = new MONITORINFO();
+			DISPLAY_DEVICE dd=new DISPLAY_DEVICE();
+			dd.cb=Marshal.SizeOf(dd);
+
+			uint id=0;
+			bool done=false;
+			while(!done) {
+				done = !WindowsMethods.EnumDisplayDevices(null, id, ref dd, 0);
+				id++;
+
+				if (!done) {
+					Log.Message($"{id}\n{dd.DeviceName}\n{dd.DeviceString}\n{dd.StateFlags}\n{dd.DeviceID}\n{dd.DeviceKey}\n");
+					dd.cb=Marshal.SizeOf(dd);
+				}
+			}
 		}
+*/
 
-		[DllImport("dwmapi", PreserveSig = false)]
-		public static extern void DwmGetColorizationColor(out uint ColorizationColor, [MarshalAs(UnmanagedType.Bool)]out bool ColorizationOpaqueBlend);
-
-		[DllImport("uxtheme", PreserveSig = false)]
-		public static extern void GetUserColorPreference(out ImmersiveColorPreference preference, [MarshalAs(UnmanagedType.Bool)] bool forceReload);
-
-		[DllImport("uxtheme", PreserveSig = false)]
-		public static extern void SetUserColorPreference(ref ImmersiveColorPreference preference, [MarshalAs(UnmanagedType.Bool)] bool forceCommit);
-
+		public static void GetMonitorInfo()
+		{
+			var all = Screen.AllScreens;
+			Log.Message($"screen count = {all.Length}");
+			for(int i=0; i<all.Length; i++) {
+				var s = all[i];
+				Log.Message($"{s.Primary}\n{s.BitsPerPixel}\n{s.Bounds}\n{s.DeviceName}\n{s.WorkingArea}");
+			}
+		}
 	}
 }
