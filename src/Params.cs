@@ -12,6 +12,7 @@ namespace RndWallpaper
 			Good = 2
 		}
 
+		//in case you might need to include a custom parser
 		public delegate bool Parser<T>(string inp, out T val);
 
 		public Params(string[] args)
@@ -183,7 +184,7 @@ namespace RndWallpaper
 		}
 
 		// consolidated the tryparse here - trying to make the code a bit more portable
-		static bool TryParse<V>(string sub, out V val)
+		public static bool TryParse<V>(string sub, out V val)
 		{
 			val = default(V);
 			Type t = typeof(V);

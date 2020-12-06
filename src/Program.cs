@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Windows.Forms;
 
 namespace RndWallpaper
 {
@@ -80,16 +82,24 @@ namespace RndWallpaper
 		static bool ParseArgs(string[] args)
 		{
 			var p = new Params(args);
+
+			if (p.Default("-d", out double delaySec).IsInvalid()) {
+				return false;
+			}
+			DelayMS = (int)Math.Round(delaySec * 1000.0,3);
 			if (p.Default("-s",out Style, PickWallpaperStyle.Fill).IsInvalid()) {
+				return false;
+			}
+			var mParser = new Params.Parser<PickMonitor>(OptionHelpers.TryParseMonitor);
+			if (p.Default("-m",out PickMonitor pickMon, PickMonitor.All, mParser).IsInvalid()) {
 				return false;
 			}
 			if (p.Default("-rs", out RndSeed).IsInvalid()) {
 				return false;
 			}
-			if (p.Default("-d", out double delaySec).IsInvalid()) {
-				return false;
+			if (p.Has("-fs").IsGood()) {
+				UseSameImage = true;
 			}
-			DelayMS = (int)Math.Round(delaySec * 1000.0,3);
 
 			if (p.Expect(out PicPath,"image or folder path").IsBad()) {
 				return false;
@@ -105,30 +115,45 @@ namespace RndWallpaper
 				return false;
 			}
 
+			//figure out which monitor device to use
+			if (pickMon != PickMonitor.All) {
+				var all = Screen.AllScreens;
+				for(int m=0; m<all.Length; m++) {
+					if (pickMon == PickMonitor.Primary && all[m].Primary) {
+						MonitorDevice = all[m].DeviceName;
+						break;
+					}
+					if ((int)pickMon - 1 == m) {
+						MonitorDevice = all[m].DeviceName;
+					}
+				}
+				if (MonitorDevice == null) {
+					Log.MonitorInvalid(pickMon);
+					return false;
+				}
+			}
+
 			return true;
 		}
 
 		static void Usage()
 		{
-			Log.Message(
-				   $"{nameof(RndWallpaper)} [options] (path of image or folder)"
-				+ "\nOptions:"
-				+ "\n -d (number)        Delay number of seconds (default 0)"
-				+ "\n -s (style)         Style of wallpaper (default 'Fill')"
-				+ "\n -rs (integer)      Random seed value (default system suplied)"
-				+ "\n -op                Apply image only to the primary monitor"
-				+ "\n -om (name)         Apply image to monitor with given name"
-				+ "\n -os                Apply the same image to all monitors (if folder given)"
-				+ "\n -?? (todo figure out what options to use for this"
-				// + "\n -ta (boolean)      Enable or disable updating accent with the background (default leave as-is)"
-				+ "\n"
-				+ "\nAvailable Styles:"
-				+ "\n Center"
-				+ "\n Stretch"
-				+ "\n Fit"
-				+ "\n Fill"
-				+ "\n Span"
-			);
+			var sb = new StringBuilder();
+			sb.WL(0,$"{nameof(RndWallpaper)} [options] (path of image or folder)");
+			sb.WL(0,"Options:");
+			sb.WL(1,"-d  (number)"  ,"Delay number of seconds (default 0)");
+			sb.WL(1,"-s  (style)"   ,"Style of wallpaper (default 'Fill')");
+			sb.WL(1,"-m  (monitor)" ,"Apply image only to a single monitor");
+			sb.WL(1,"-rs (integer)" ,"Random seed value (default system suplied)");
+			sb.WL(1,"-fs"           ,"When folder given, use same image for all monitors");
+			sb.WL();
+			sb.WL(0,"Available Styles:");
+			sb.PrintEnum<PickWallpaperStyle>(1);
+			sb.WL();
+			sb.WL(0,"Available Monitors:");
+			sb.PrintMonitors(1);
+
+			Log.Message(sb.ToString());
 		}
 
 		static PickWallpaperStyle Style = PickWallpaperStyle.None;
@@ -136,6 +161,8 @@ namespace RndWallpaper
 		static string PicPath = null;
 		static bool IsFolder = false;
 		static int DelayMS = 0;
+		static string MonitorDevice = null;
+		static bool UseSameImage = false;
 
 	}
 }

@@ -12,11 +12,19 @@ namespace RndWallpaper
 	public enum PickWallpaperStyle
 	{
 		None = 0,
-		Tile,
-		Center,
-		Stretch,
-		Fit,
-		Fill,
-		Span
+		Center = 1,
+		Tile = 2,
+		Stretch = 3,
+		Fit = 4,
+		Fill = 5,
+		Span = 6
 	}
+
+	//special enum used to select monitor
+	public enum PickMonitor
+	{
+		All = 0,
+		Primary = -1,
+	}
+
 }

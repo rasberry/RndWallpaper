@@ -57,5 +57,8 @@ namespace RndWallpaper
 		//public static void InvalidPassword() {
 		//	Log.Error("password is missing or invalid");
 		//}
+		public static void MonitorInvalid(PickMonitor pick) {
+			Log.Error($"Chosen monitor {pick} is invalid");
+		}
 	}
 }
