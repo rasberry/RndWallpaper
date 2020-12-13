@@ -29,3 +29,5 @@ Available Styles:
 * maybe add an information action which shows current settings
 * maybe add a change settings action
 * maybe add a way to download images from some sources (not sure where tho)
+* add a way to change the lock screen also
+  * what about the login screen ? (is that different ?)
