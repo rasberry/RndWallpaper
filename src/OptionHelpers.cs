@@ -67,18 +67,6 @@ namespace RndWallpaper
 			sb.PrintListWithBullets(list,level);
 		}
 
-		/*
-		public static void PrintMonitors(this StringBuilder sb, int level = 0)
-		{
-			var wp = (IDesktopWallpaper)new DesktopWallpaperClass();
-			uint count = wp.GetMonitorDevicePathCount();
-			for(uint m=0; m<count; m++) {
-				string name = wp.GetMonitorDevicePathAt(m);
-
-			}
-		}
-		*/
-
 		const int ColumnOffset = 30;
 		public static StringBuilder WL(this StringBuilder sb, int level, string def, string desc)
 		{

@@ -1,14 +1,5 @@
 namespace RndWallpaper
 {
-	public enum PickReason
-	{
-		Success = 0,
-		FileDoesNotExist,
-		NotSupported,
-		SetWallpaperFailed,
-		FileNotAvailable
-	}
-
 	public enum PickWallpaperStyle
 	{
 		None = 0,
@@ -17,7 +8,7 @@ namespace RndWallpaper
 		Stretch,
 		Fit,
 		Fill,
-		Span
+		Span = 6
 	}
 
 	//special enum used to select monitor

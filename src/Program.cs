@@ -22,29 +22,6 @@ namespace RndWallpaper
 			}
 		}
 
-		/*
-		static void Test()
-		{
-			Helpers.GetMonitorInfo3();
-			return;
-			var wp = (IDesktopWallpaperPrivate)new DesktopWallpaperClass();
-			var name = wp.GetMonitorDevicePathAt(0);
-			//wp.SetWallpaper(name,@"d:\Home\Pictures\Backgrounds\aad-golden-gate-bridge.png");
-			int num = wp.GetMonitorNumber(name);
-			Log.Message($"name {name} num {num}");
-		}
-
-		static void Test2()
-		{
-			Log.Message("GetMonitorInfo1");
-			Helpers.GetMonitorInfo1();
-			Log.Message("GetMonitorInfo2");
-			Helpers.GetMonitorInfo2();
-			Log.Message("GetMonitorInfo3");
-			Helpers.GetMonitorInfo3();
-		}
-		*/
-
 		static void MainMain(string[] args)
 		{
 			if (args.Length < 1) {
@@ -136,6 +113,43 @@ namespace RndWallpaper
 			return true;
 		}
 
+		static bool SelectMonitor(PickMonitor pickMon)
+		{
+			var all = Screen.AllScreens;
+			for(int m=0; m<all.Length; m++) {
+				if (pickMon == PickMonitor.Primary && all[m].Primary) {
+					MonitorId = all[m].DeviceName;
+					pickMon = (PickMonitor)(m + 1); //use the real value now
+					break;
+				}
+				if ((int)pickMon - 1 == m) {
+					//only setting this to indicate that we found something
+					MonitorId = all[m].DeviceName;
+				}
+			}
+			if (MonitorId == null) {
+				Log.MonitorInvalid(pickMon);
+				return false;
+			}
+
+			var wp = Helpers.GetWallPaperInstance();
+			uint dcount = wp.GetMonitorDevicePathCount();
+			for(uint m=0; m<dcount; m++) {
+				string dname = wp.GetMonitorDevicePathAt(m);
+				int dnum = wp.GetMonitorNumber(dname); // undocumented :-o
+				if (dnum < 1 || dnum > dcount) {
+					Log.Error($"Invalid monitor number '{dnum}' encountered");
+					return false;
+				}
+				if (dnum == (int)pickMon) {
+					MonitorId = dname;
+					break;
+				}
+			}
+
+			return true;
+		}
+
 		static bool ParseArgs(string[] args)
 		{
 			var p = new Params(args);
@@ -176,43 +190,6 @@ namespace RndWallpaper
 			if (Monitor != PickMonitor.All) {
 				if (!SelectMonitor(Monitor)) {
 					return false;
-				}
-			}
-
-			return true;
-		}
-
-		static bool SelectMonitor(PickMonitor pickMon)
-		{
-			var all = Screen.AllScreens;
-			for(int m=0; m<all.Length; m++) {
-				if (pickMon == PickMonitor.Primary && all[m].Primary) {
-					MonitorId = all[m].DeviceName;
-					pickMon = (PickMonitor)(m + 1); //use the real value now
-					break;
-				}
-				if ((int)pickMon - 1 == m) {
-					//only setting this to indicate that we found something
-					MonitorId = all[m].DeviceName;
-				}
-			}
-			if (MonitorId == null) {
-				Log.MonitorInvalid(pickMon);
-				return false;
-			}
-
-			var wp = Helpers.GetWallPaperInstance();
-			uint dcount = wp.GetMonitorDevicePathCount();
-			for(uint m=0; m<dcount; m++) {
-				string dname = wp.GetMonitorDevicePathAt(m);
-				int dnum = wp.GetMonitorNumber(dname); // undocumented :-o
-				if (dnum < 1 || dnum > dcount) {
-					Log.Error($"Invalid monitor number '{dnum}' encountered");
-					return false;
-				}
-				if (dnum == (int)pickMon) {
-					MonitorId = dname;
-					break;
 				}
 			}
 

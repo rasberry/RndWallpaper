@@ -47,6 +47,7 @@ namespace RndWallpaper
 		Span = 5,
 	}
 
+	#if false //keep this in case IDesktopWallpaperPrivate goes away
 	[ComImport, Guid("B92B56A9-8B55-4E14-9A89-0199BBB6F93B"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 	public interface IDesktopWallpaper
 	{
@@ -103,6 +104,7 @@ namespace RndWallpaper
 
 		bool Enable();
 	}
+	#endif
 
 	[ComImport, Guid("C182461F-DFAC-4375-AB6E-4CC45AA7F9CC"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 	public interface IDesktopWallpaperPrivate
