@@ -36,5 +36,26 @@ namespace RndWallpaper
 		public static void MonitorInvalid(PickMonitor pick) {
 			Log.Error($"Chosen monitor {pick} is invalid");
 		}
+		public static void NoMonitors() {
+			Log.Error("No monitors were detected");
+		}
+		public static void SettingBackgroundDelay(int delayMS) {
+			Log.Message($"setting background in {Math.Round(delayMS/1000.0,3)} seconds");
+		}
+		public static void SettingStyle(PickWallpaperStyle style) {
+			Log.Message($"Setting style to {style}");
+		}
+		public static void SettingBackground(uint monitorIndex, string path) {
+			Log.Message($"Setting {monitorIndex} to {path}");
+		}
+		public static void InvalidMonitorNum(int dnum) {
+			Log.Error($"Invalid monitor number '{dnum}' encountered");
+		}
+		public static void NoImagesFound(string path) {
+			Log.Error($"No supported images found in {path}");
+		}
+		public static void FormatNotSupported(string ext) {
+			Log.Error($"Image format '{ext}' is not supported");
+		}
 	}
 }

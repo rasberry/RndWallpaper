@@ -35,7 +35,7 @@ namespace RndWallpaper
 			var wp = (IDesktopWallpaperPrivate)(new DesktopWallpaperClass());
 			uint dcount = wp.GetMonitorDevicePathCount();
 			if (dcount < 1) {
-				Log.Error("No monitors were detected");
+				Log.NoMonitors();
 				return;
 			}
 
@@ -44,28 +44,28 @@ namespace RndWallpaper
 			}
 
 			if (DelayMS > 0) {
-				Log.Message($"setting background in {Math.Round(DelayMS/1000.0,3)} seconds");
+				Log.SettingBackgroundDelay(DelayMS);
 				System.Threading.Thread.Sleep(DelayMS);
 			}
 
-			Log.Message($"Setting style to {Style}");
+			Log.SettingStyle(Style);
 			wp.SetPosition(Helpers.MapStyle(Style));
 
 			if (Monitor == PickMonitor.All) {
 				for(uint m=0; m<dcount; m++) {
 					if (thePlan[m] == null) { continue; }
 					string mname = wp.GetMonitorDevicePathAt(m);
-					Log.Message($"Setting {(m+1)} to {thePlan[m]}");
+					Log.SettingBackground(m + 1,thePlan[m]);
 					wp.SetWallpaper(mname,thePlan[m]);
 				}
 			}
 			else {
 				int dnum = wp.GetMonitorNumber(MonitorId);
 				if (dnum < 1 || dnum > dcount) {
-					Log.Error($"Invalid monitor number '{dnum}' encountered");
+					Log.InvalidMonitorNum(dnum);
 				}
 				string file = thePlan[dnum - 1];
-				Log.Message($"Setting {dnum} to {file}");
+				Log.SettingBackground((uint)dnum,file);
 				wp.SetWallpaper(MonitorId,file);
 			}
 		}
@@ -84,7 +84,7 @@ namespace RndWallpaper
 
 				int count = imgList.Count;
 				if (count < 1) {
-					Log.Error($"No supported images found in {PicPath}");
+					Log.NoImagesFound(PicPath);
 					return false;
 				}
 
@@ -101,7 +101,7 @@ namespace RndWallpaper
 				var norm = PicPath.ToLowerInvariant();
 				string ext = Path.GetExtension(norm);
 				if (!Helpers.IsExtensionSupported(ext)) {
-					Log.Error($"Image format '{ext}' is not supported");
+					Log.FormatNotSupported(ext);
 					return false;
 				}
 
@@ -138,7 +138,7 @@ namespace RndWallpaper
 				string dname = wp.GetMonitorDevicePathAt(m);
 				int dnum = wp.GetMonitorNumber(dname); // undocumented :-o
 				if (dnum < 1 || dnum > dcount) {
-					Log.Error($"Invalid monitor number '{dnum}' encountered");
+					Log.InvalidMonitorNum(dnum);
 					return false;
 				}
 				if (dnum == (int)pickMon) {
