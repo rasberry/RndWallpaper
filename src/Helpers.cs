@@ -122,8 +122,7 @@ namespace RndWallpaper
 			return Color.FromArgb(a,r,g,b);
 		}
 
-/*
-		public static void GetMonitorInfo()
+		public static void GetMonitorInfo2()
 		{
 			//MONITORINFO lPrimaryScreenInfo = new MONITORINFO();
 			DISPLAY_DEVICE dd=new DISPLAY_DEVICE();
@@ -135,15 +134,26 @@ namespace RndWallpaper
 				done = !WindowsMethods.EnumDisplayDevices(null, id, ref dd, 0);
 				id++;
 
+				if (dd.StateFlags == DisplayDeviceStateFlags.None) { continue; }
 				if (!done) {
 					Log.Message($"{id}\n{dd.DeviceName}\n{dd.DeviceString}\n{dd.StateFlags}\n{dd.DeviceID}\n{dd.DeviceKey}\n");
 					dd.cb=Marshal.SizeOf(dd);
 				}
 			}
 		}
-*/
 
-		public static void GetMonitorInfo()
+		public static void GetMonitorInfo3()
+		{
+			var w = (IDesktopWallpaperPrivate)new DesktopWallpaperClass();
+			uint count = w.GetMonitorDevicePathCount();
+			for(uint m=0; m<count; m++) {
+				string mpath = w.GetMonitorDevicePathAt(m);
+				int num = w.GetMonitorNumber(mpath);
+				Log.Message($"{m} path={mpath} num={num}");
+			}
+		}
+
+		public static void GetMonitorInfo1()
 		{
 			var all = Screen.AllScreens;
 			Log.Message($"screen count = {all.Length}");
@@ -152,5 +162,37 @@ namespace RndWallpaper
 				Log.Message($"{s.Primary}\n{s.BitsPerPixel}\n{s.Bounds}\n{s.DeviceName}\n{s.WorkingArea}");
 			}
 		}
+
+		public static bool IsExtensionSupported(string ext)
+		{
+			switch(ext) {
+				case ".bmp":  case ".dib":  case ".gif":
+				case ".jfif": case ".jpe":  case ".jpeg":
+				case ".jpg":  case ".png":  case ".tif":
+				case ".tiff": case ".wdp":
+					return true;
+			}
+			return false;
+		}
+
+		public static IDesktopWallpaperPrivate GetWallPaperInstance()
+		{
+			var wp = (IDesktopWallpaperPrivate)new DesktopWallpaperClass();
+			return wp;
+		}
+
+		public static DesktopWallpaperPosition MapStyle(PickWallpaperStyle style)
+		{
+			switch(style) {
+			case PickWallpaperStyle.Center:  return DesktopWallpaperPosition.Center;
+			case PickWallpaperStyle.Fill:    return DesktopWallpaperPosition.Fill;
+			case PickWallpaperStyle.Fit:     return DesktopWallpaperPosition.Fit;
+			case PickWallpaperStyle.Span:    return DesktopWallpaperPosition.Span;
+			case PickWallpaperStyle.Stretch: return DesktopWallpaperPosition.Stretch;
+			case PickWallpaperStyle.Tile:    return DesktopWallpaperPosition.Tile;
+			}
+			return DesktopWallpaperPosition.Fill;
+		}
+
 	}
 }

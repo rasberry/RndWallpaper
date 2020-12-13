@@ -22,6 +22,29 @@ namespace RndWallpaper
 			}
 		}
 
+		/*
+		static void Test()
+		{
+			Helpers.GetMonitorInfo3();
+			return;
+			var wp = (IDesktopWallpaperPrivate)new DesktopWallpaperClass();
+			var name = wp.GetMonitorDevicePathAt(0);
+			//wp.SetWallpaper(name,@"d:\Home\Pictures\Backgrounds\aad-golden-gate-bridge.png");
+			int num = wp.GetMonitorNumber(name);
+			Log.Message($"name {name} num {num}");
+		}
+
+		static void Test2()
+		{
+			Log.Message("GetMonitorInfo1");
+			Helpers.GetMonitorInfo1();
+			Log.Message("GetMonitorInfo2");
+			Helpers.GetMonitorInfo2();
+			Log.Message("GetMonitorInfo3");
+			Helpers.GetMonitorInfo3();
+		}
+		*/
+
 		static void MainMain(string[] args)
 		{
 			if (args.Length < 1) {
@@ -32,51 +55,85 @@ namespace RndWallpaper
 				return;
 			}
 
-			string file = null;
-			if (IsFolder) {
-				var rawList = Directory.GetFileSystemEntries(PicPath);
-				var imgList = rawList.Where(file => {
-					var norm = file.ToLowerInvariant();
-					if (norm.EndsWith(".png")) { return true; }
-					if (norm.EndsWith(".jpg")) { return true; }
-					return false;
-				});
-
-				int count = imgList.Count();
-				if (count < 1) {
-					Log.Error($"No images found in {PicPath}");
-					return;
-				}
-
-				var rnd = RndSeed.HasValue ? new Random(RndSeed.Value) : new Random();
-				int index = rnd.Next(count);
-
-				file = imgList.ElementAt(index);
+			var wp = (IDesktopWallpaperPrivate)(new DesktopWallpaperClass());
+			uint dcount = wp.GetMonitorDevicePathCount();
+			if (dcount < 1) {
+				Log.Error("No monitors were detected");
+				return;
 			}
-			else {
-				file = PicPath;
+
+			if (!FillPlan(dcount,out string[] thePlan)) {
+				return;
 			}
 
 			if (DelayMS > 0) {
 				Log.Message($"setting background in {Math.Round(DelayMS/1000.0,3)} seconds");
 				System.Threading.Thread.Sleep(DelayMS);
 			}
-			Log.Message($"setting background to {file}");
-			//int result = Helpers.SetBackground(file, Style);
-			var wallpaper = (IDesktopWallpaper)(new DesktopWallpaperClass());
-			uint mcount = wallpaper.GetMonitorDevicePathCount();
 
-			for(uint m=0; m<mcount; m++) {
-				string mname = wallpaper.GetMonitorDevicePathAt(m);
-				Log.Message($"M {m} = {mname}");
+			Log.Message($"Setting style to {Style}");
+			wp.SetPosition(Helpers.MapStyle(Style));
+
+			if (Monitor == PickMonitor.All) {
+				for(uint m=0; m<dcount; m++) {
+					if (thePlan[m] == null) { continue; }
+					string mname = wp.GetMonitorDevicePathAt(m);
+					Log.Message($"Setting {(m+1)} to {thePlan[m]}");
+					wp.SetWallpaper(mname,thePlan[m]);
+				}
+			}
+			else {
+				int dnum = wp.GetMonitorNumber(MonitorId);
+				if (dnum < 1 || dnum > dcount) {
+					Log.Error($"Invalid monitor number '{dnum}' encountered");
+				}
+				string file = thePlan[dnum - 1];
+				Log.Message($"Setting {dnum} to {file}");
+				wp.SetWallpaper(MonitorId,file);
+			}
+		}
+
+		static bool FillPlan(uint monitorCount, out string[] thePlan)
+		{
+			thePlan = new string[monitorCount];
+
+			if (IsFolder) {
+				var rawList = Directory.GetFileSystemEntries(PicPath);
+				var imgList = rawList.Where(file => {
+					var norm = file.ToLowerInvariant();
+					string ext = Path.GetExtension(norm);
+					return Helpers.IsExtensionSupported(ext);
+				}).ToList();
+
+				int count = imgList.Count;
+				if (count < 1) {
+					Log.Error($"No supported images found in {PicPath}");
+					return false;
+				}
+
+				var rnd = RndSeed.HasValue ? new Random(RndSeed.Value) : new Random();
+				int index = 0;
+				for(int i=0; i<monitorCount; i++) {
+					if (!UseSameImage || i == 0) {
+						index = rnd.Next(count);
+					}
+					thePlan[i] = imgList[index];
+				}
+			}
+			else {
+				var norm = PicPath.ToLowerInvariant();
+				string ext = Path.GetExtension(norm);
+				if (!Helpers.IsExtensionSupported(ext)) {
+					Log.Error($"Image format '{ext}' is not supported");
+					return false;
+				}
+
+				for(int i=0; i<monitorCount; i++) {
+					thePlan[i] = PicPath;
+				}
 			}
 
-			//if (result != 0) {
-			//	Log.Error("setting background failed");
-			//}
-
-			//var c = Helpers.GetAccentColor();
-			//Console.WriteLine($"accent = {c}");
+			return true;
 		}
 
 		static bool ParseArgs(string[] args)
@@ -91,7 +148,7 @@ namespace RndWallpaper
 				return false;
 			}
 			var mParser = new Params.Parser<PickMonitor>(OptionHelpers.TryParseMonitor);
-			if (p.Default("-m",out PickMonitor pickMon, PickMonitor.All, mParser).IsInvalid()) {
+			if (p.Default("-m",out Monitor, PickMonitor.All, mParser).IsInvalid()) {
 				return false;
 			}
 			if (p.Default("-rs", out RndSeed).IsInvalid()) {
@@ -116,20 +173,46 @@ namespace RndWallpaper
 			}
 
 			//figure out which monitor device to use
-			if (pickMon != PickMonitor.All) {
-				var all = Screen.AllScreens;
-				for(int m=0; m<all.Length; m++) {
-					if (pickMon == PickMonitor.Primary && all[m].Primary) {
-						MonitorDevice = all[m].DeviceName;
-						break;
-					}
-					if ((int)pickMon - 1 == m) {
-						MonitorDevice = all[m].DeviceName;
-					}
-				}
-				if (MonitorDevice == null) {
-					Log.MonitorInvalid(pickMon);
+			if (Monitor != PickMonitor.All) {
+				if (!SelectMonitor(Monitor)) {
 					return false;
+				}
+			}
+
+			return true;
+		}
+
+		static bool SelectMonitor(PickMonitor pickMon)
+		{
+			var all = Screen.AllScreens;
+			for(int m=0; m<all.Length; m++) {
+				if (pickMon == PickMonitor.Primary && all[m].Primary) {
+					MonitorId = all[m].DeviceName;
+					pickMon = (PickMonitor)(m + 1); //use the real value now
+					break;
+				}
+				if ((int)pickMon - 1 == m) {
+					//only setting this to indicate that we found something
+					MonitorId = all[m].DeviceName;
+				}
+			}
+			if (MonitorId == null) {
+				Log.MonitorInvalid(pickMon);
+				return false;
+			}
+
+			var wp = Helpers.GetWallPaperInstance();
+			uint dcount = wp.GetMonitorDevicePathCount();
+			for(uint m=0; m<dcount; m++) {
+				string dname = wp.GetMonitorDevicePathAt(m);
+				int dnum = wp.GetMonitorNumber(dname); // undocumented :-o
+				if (dnum < 1 || dnum > dcount) {
+					Log.Error($"Invalid monitor number '{dnum}' encountered");
+					return false;
+				}
+				if (dnum == (int)pickMon) {
+					MonitorId = dname;
+					break;
 				}
 			}
 
@@ -161,8 +244,8 @@ namespace RndWallpaper
 		static string PicPath = null;
 		static bool IsFolder = false;
 		static int DelayMS = 0;
-		static string MonitorDevice = null;
+		static string MonitorId = null;
 		static bool UseSameImage = false;
-
+		static PickMonitor Monitor = PickMonitor.All;
 	}
 }

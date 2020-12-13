@@ -24,7 +24,7 @@ namespace RndWallpaper
 		[DllImport("user32", CharSet = CharSet.Auto)]
 		public static extern bool EnumDisplayDevices(string lpDevice, uint iDevNum, ref DISPLAY_DEVICE lpDisplayDevice, uint dwFlags);
 
-		[DllImport("user32.dll", CharSet = CharSet.Auto)]
+		[DllImport("user32", CharSet = CharSet.Auto)]
 		public static extern bool GetMonitorInfo(IntPtr hMonitor, ref MonitorInfoEx lpmi);
 
 	}
