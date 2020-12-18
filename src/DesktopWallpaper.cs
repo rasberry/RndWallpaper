@@ -187,14 +187,19 @@ namespace RndWallpaper
 
 	#endif
 
-	//TODO not working with native
+	#if false
+	//TODO not working with native compilation 6.0.0-alpha.*
 	// try https://github.com/dotnet/corert/issues/6252#issuecomment-415591702
 	/// <summary>
 	/// CoClass DesktopWallpaper
 	/// </summary>
-	//[ComImport, Guid("C2CF3110-460E-4fc1-B9D0-8A1C0C9CC4BD")]
-	//public class DesktopWallpaperClass { } TODO NOT WORKING
+	[ComImport, Guid("C2CF3110-460E-4fc1-B9D0-8A1C0C9CC4BD")]
+	public class DesktopWallpaperClass { }
+	#endif
 
+	// Used example from corert team to implement manual interop
+	// so that I can still use native compilation
+	// https://github.com/dotnet/corert/issues/6252#issuecomment-415591702
 	public sealed class DesktopWallpaperClass : IDisposable
 	{
 		public DesktopWallpaperClass()
@@ -202,15 +207,17 @@ namespace RndWallpaper
 			Init();
 		}
 
-		// https://github.com/dotnet/corert/issues/6252#issuecomment-415591702
 		void Init()
 		{
 			int hr = WindowsMethods.CoInitializeEx(IntPtr.Zero, COINIT.COINIT_APARTMENTTHREADED);
 			Marshal.ThrowExceptionForHR(hr, new IntPtr(-1));
 
+			// DesktopWallpaper Class
 			Guid ClassId = new Guid("C2CF3110-460E-4fc1-B9D0-8A1C0C9CC4BD");
-			Guid InterfaceId = new Guid("C182461F-DFAC-4375-AB6E-4CC45AA7F9CC");
+			// IDesktopWallPaper
 			// Guid InterfaceId = new Guid("B92B56A9-8B55-4E14-9A89-0199BBB6F93B");
+			// IDesktopWallPaperPrivate
+			Guid InterfaceId = new Guid("C182461F-DFAC-4375-AB6E-4CC45AA7F9CC");
 			IntPtr ppv;
 
 			int hResult = WindowsMethods.CoCreateInstance(
@@ -220,6 +227,7 @@ namespace RndWallpaper
 			Pointer = ppv;
 		}
 
+		//from oleviewdotnet - https://github.com/tyranid/oleviewdotnet
 		enum ProcOffset : int
 		{
 			IUnknown_QueryInterface = 0,                     /* [In] IntPtr pthis, [In] IntPtr priid, [Out] IntPtr ppvObject */
@@ -265,7 +273,6 @@ namespace RndWallpaper
 		{
 			var vp = GetComOffset(Pointer,ProcOffset.IDesktopWallpaper_SetWallpaper);
 			var func = Marshal.GetDelegateForFunctionPointer<IDesktopWallpaper_SetWallpaper>(vp);
-			//Log.Debug($"SetWallpaper monitorID={monitorID} wallpaper={wallpaper}");
 			int hr = func(Pointer,monitorID,wallpaper);
 			Marshal.ThrowExceptionForHR(hr,new IntPtr(-1));
 		}
@@ -278,10 +285,8 @@ namespace RndWallpaper
 		{
 			var vp = GetComOffset(Pointer,ProcOffset.IDesktopWallpaper_GetMonitorDevicePathAt);
 			var func = Marshal.GetDelegateForFunctionPointer<IDesktopWallpaper_GetMonitorDevicePathAt>(vp);
-			//Log.Debug($"GetMonitorDevicePathAt index={index}");
 			int hr = func(Pointer,index, out string monitorId);
 			Marshal.ThrowExceptionForHR(hr,new IntPtr(-1));
-			//Log.Debug($"GetMonitorDevicePathAt monitorId={monitorId}");
 			return monitorId;
 		}
 
@@ -292,10 +297,8 @@ namespace RndWallpaper
 		{
 			var vp = GetComOffset(Pointer,ProcOffset.IDesktopWallpaper_GetMonitorDevicePathCount);
 			var func = Marshal.GetDelegateForFunctionPointer<IDesktopWallpaper_GetMonitorDevicePathCount>(vp);
-			//($"GetMonitorDevicePathCount");
 			int hr = func(Pointer,out uint count);
 			Marshal.ThrowExceptionForHR(hr,new IntPtr(-1));
-			//Log.Debug($"GetMonitorDevicePathCount count={count}");
 			return count;
 		}
 
@@ -306,7 +309,6 @@ namespace RndWallpaper
 		{
 			var vp = GetComOffset(Pointer,ProcOffset.IDesktopWallpaper_SetPosition);
 			var func = Marshal.GetDelegateForFunctionPointer<IDesktopWallpaper_SetPosition>(vp);
-			//Log.Debug($"SetPosition position={position}");
 			int hr = func(Pointer,(int)position);
 			Marshal.ThrowExceptionForHR(hr,new IntPtr(-1));
 		}
@@ -319,16 +321,16 @@ namespace RndWallpaper
 		{
 			var vp = GetComOffset(Pointer,ProcOffset.IDesktopWallpaperPrivate_GetMonitorNumber);
 			var func = Marshal.GetDelegateForFunctionPointer<IDesktopWallpaperPrivate_GetMonitorNumber>(vp);
-			//Log.Debug($"GetMonitorNumber monitorID={monitorID}");
 			int hr = func(Pointer,monitorID, out int monitorNum);
 			Marshal.ThrowExceptionForHR(hr,new IntPtr(-1));
-			//Log.Debug($"GetMonitorNumber monitorNum={monitorNum}");
 			return monitorNum;
 		}
 
 		IntPtr Pointer;
 		bool disposedValue;
 
+		//helper function to get a pointer to a COM method
+		// don't know how to do this without unsafe
 		static unsafe IntPtr GetComOffset(IntPtr ptr, ProcOffset offset)
 		{
 			return *((*(IntPtr**)ptr) + (int)offset);
@@ -341,6 +343,7 @@ namespace RndWallpaper
 					// TODO: dispose managed state (managed objects)
 				}
 
+				//cleanup COM instance
 				Release(Pointer);
 				Pointer = IntPtr.Zero;
 

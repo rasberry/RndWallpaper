@@ -121,24 +121,6 @@ namespace RndWallpaper
 		Disconnect = 0x2000000
 	}
 
-	// https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-display_devicew
-	[StructLayout(LayoutKind.Sequential, CharSet=CharSet.Auto)]
-	public struct DisplayDevice
-	{
-		[MarshalAs(UnmanagedType.U4)]
-		public int cb;
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst=32)]
-		public string DeviceName;
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst=128)]
-		public string DeviceString;
-		[MarshalAs(UnmanagedType.U4)]
-		public DisplayDeviceStateFlags StateFlags;
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst=128)]
-		public string DeviceID;
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst=128)]
-		public string DeviceKey;
-	}
-
 	/// <summary>
 	/// The MONITORINFOEX structure contains information about a display monitor.
 	/// The GetMonitorInfo function stores information into a MONITORINFOEX structure or a MONITORINFO structure.
@@ -394,11 +376,4 @@ namespace RndWallpaper
 		CLSCTX_ALL    = CLSCTX_SERVER|CLSCTX_INPROC_HANDLER
 	}
 
-	[StructLayout(LayoutKind.Sequential)]
-	public struct MULTI_QI
-	{
-		[MarshalAs(UnmanagedType.LPStruct)]  public Guid pIID;
-		[MarshalAs(UnmanagedType.Interface)] public object pItf;
-		public int hr;
-	}
 }

@@ -5,18 +5,14 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-<!--    <UseWindowsForms>true</UseWindowsForms>
-    <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
--->
   </PropertyGroup>
 
   <ItemGroup>
     <!-- <PackageReference Include="Microsoft.DotNet.ILCompiler" Version="1.0.0-alpha-*" /> -->
     <PackageReference Include="Microsoft.DotNet.ILCompiler" Version="6.0.0-alpha.*" />
-    <!-- <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" /> -->
-    <!-- <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.19041.1" /> -->
   </ItemGroup>
 
+  <!-- uncomment to output native compile messages -->
   <!--
   <ItemGroup>
     <IlcArg Include="- -verbose" />

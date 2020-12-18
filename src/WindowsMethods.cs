@@ -6,9 +6,6 @@ namespace RndWallpaper
 	public static class WindowsMethods
 	{
 		[DllImport("user32", CharSet = CharSet.Auto)]
-		public static extern bool EnumDisplayDevices(string lpDevice, uint iDevNum, ref DisplayDevice lpDisplayDevice, uint dwFlags);
-
-		[DllImport("user32", CharSet = CharSet.Auto)]
 		public static extern bool GetMonitorInfo(HandleRef hMonitor, ref MonitorInfoEx lpmi);
 
 		[DllImport("user32", ExactSpelling = true)]

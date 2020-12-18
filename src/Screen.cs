@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 namespace RndWallpaper
 {
 	//https://referencesource.microsoft.com/#System.Windows.Forms/winforms/Managed/System/WinForms/Screen.cs
-
+	// porting Screen class instead of using Forms.Screen so I don't have to include all of Forms
 	public sealed class Screen
 	{
 		readonly IntPtr hmonitor;

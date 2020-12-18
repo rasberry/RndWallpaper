@@ -31,6 +31,7 @@ Available Monitors:
 * ```dotnet publish -r win-x64 -c release```
 
 ## TODO ##
+* add better messages for hresult errors
 * add more platforms (linux?)
 * add an option to choose sequential images instead of just random ones from a folder
 * maybe add a way to setup an image rss feed by changing windows settings

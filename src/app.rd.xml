@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Used to include additional classes that natvie compilation might miss -->
 <Directives xmlns="http://schemas.microsoft.com/netfx/2013/01/metadata">
   <Application>
-    <Namespace Name="RndWallpaper.IDesktopWallpaperPrivate" MarshalObject="Required Auto" />
   </Application>
 </Directives>
