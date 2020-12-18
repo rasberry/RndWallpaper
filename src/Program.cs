@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Windows.Forms;
 
 namespace RndWallpaper
 {
@@ -32,41 +32,43 @@ namespace RndWallpaper
 				return;
 			}
 
-			var wp = (IDesktopWallpaperPrivate)(new DesktopWallpaperClass());
-			uint dcount = wp.GetMonitorDevicePathCount();
-			if (dcount < 1) {
-				Log.NoMonitors();
-				return;
-			}
-
-			if (!FillPlan(dcount,out string[] thePlan)) {
-				return;
-			}
-
-			if (DelayMS > 0) {
-				Log.SettingBackgroundDelay(DelayMS);
-				System.Threading.Thread.Sleep(DelayMS);
-			}
-
-			Log.SettingStyle(Style);
-			wp.SetPosition(Helpers.MapStyle(Style));
-
-			if (Monitor == PickMonitor.All) {
-				for(uint m=0; m<dcount; m++) {
-					if (thePlan[m] == null) { continue; }
-					string mname = wp.GetMonitorDevicePathAt(m);
-					Log.SettingBackground(m + 1,thePlan[m]);
-					wp.SetWallpaper(mname,thePlan[m]);
+			using(var wp = new DesktopWallpaperClass()) {
+				//var wp = Helpers.GetWallPaperInstance();
+				uint dcount = Helpers.GetMonitorCount(wp);
+				if (dcount < 1) {
+					Log.NoMonitors();
+					return;
 				}
-			}
-			else {
-				int dnum = wp.GetMonitorNumber(MonitorId);
-				if (dnum < 1 || dnum > dcount) {
-					Log.InvalidMonitorNum(dnum);
+
+				if (!FillPlan(dcount,out string[] thePlan)) {
+					return;
 				}
-				string file = thePlan[dnum - 1];
-				Log.SettingBackground((uint)dnum,file);
-				wp.SetWallpaper(MonitorId,file);
+
+				if (DelayMS > 0) {
+					Log.SettingBackgroundDelay(DelayMS);
+					System.Threading.Thread.Sleep(DelayMS);
+				}
+
+				Log.SettingStyle(Style);
+				wp.SetPosition(Helpers.MapStyle(Style));
+
+				if (Monitor == PickMonitor.All) {
+					for(uint m=0; m<dcount; m++) {
+						if (thePlan[m] == null) { continue; }
+						string mname = wp.GetMonitorDevicePathAt(m);
+						Log.SettingBackground(m + 1,thePlan[m]);
+						wp.SetWallpaper(mname,thePlan[m]);
+					}
+				}
+				else {
+					int dnum = wp.GetMonitorNumber(MonitorId);
+					if (dnum < 1 || dnum > dcount) {
+						Log.InvalidMonitorNum(dnum);
+					}
+					string file = thePlan[dnum - 1];
+					Log.SettingBackground((uint)dnum,file);
+					wp.SetWallpaper(MonitorId,file);
+				}
 			}
 		}
 
@@ -115,6 +117,26 @@ namespace RndWallpaper
 
 		static bool SelectMonitor(PickMonitor pickMon)
 		{
+			/*
+			var all = new List<DisplayDevice>(Helpers.EnumerateMonitors());
+			for(int m=0; m<all.Count; m++) {
+				bool isPrim = all[m].StateFlags.HasFlag(DisplayDeviceStateFlags.PrimaryDevice);
+				if (pickMon == PickMonitor.Primary && isPrim) {
+					MonitorId = all[m].DeviceName;
+					pickMon = (PickMonitor)(m + 1); //use the real value now
+					break;
+				}
+				if ((int)pickMon - 1 == m) {
+					//only setting this to indicate that we found something
+					MonitorId = all[m].DeviceName;
+				}
+			}
+			if (MonitorId == null) {
+				Log.MonitorInvalid(pickMon);
+				return false;
+			}\
+			*/
+
 			var all = Screen.AllScreens;
 			for(int m=0; m<all.Length; m++) {
 				if (pickMon == PickMonitor.Primary && all[m].Primary) {
@@ -132,18 +154,19 @@ namespace RndWallpaper
 				return false;
 			}
 
-			var wp = Helpers.GetWallPaperInstance();
-			uint dcount = wp.GetMonitorDevicePathCount();
-			for(uint m=0; m<dcount; m++) {
-				string dname = wp.GetMonitorDevicePathAt(m);
-				int dnum = wp.GetMonitorNumber(dname); // undocumented :-o
-				if (dnum < 1 || dnum > dcount) {
-					Log.InvalidMonitorNum(dnum);
-					return false;
-				}
-				if (dnum == (int)pickMon) {
-					MonitorId = dname;
-					break;
+			using(var wp = new DesktopWallpaperClass()) {
+				uint dcount = Helpers.GetMonitorCount(wp);
+				for(uint m=0; m<dcount; m++) {
+					string dname = wp.GetMonitorDevicePathAt(m);
+					int dnum = wp.GetMonitorNumber(dname); // undocumented :-o
+					if (dnum < 1 || dnum > dcount) {
+						Log.InvalidMonitorNum(dnum);
+						return false;
+					}
+					if (dnum == (int)pickMon) {
+						MonitorId = dname;
+						break;
+					}
 				}
 			}
 

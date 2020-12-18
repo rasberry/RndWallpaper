@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Windows.Forms;
 
 namespace RndWallpaper
 {
@@ -66,6 +65,25 @@ namespace RndWallpaper
 			sb.WL(level,"Primary","Select the primary monitor");
 			sb.PrintListWithBullets(list,level);
 		}
+
+		/*
+		public static void PrintMonitors(this StringBuilder sb, int level = 0)
+		{
+			var all = new List<DisplayDevice>(Helpers.EnumerateMonitors());
+			var list = new List<(int,string,string)>();
+
+			for(int i=0; i<all.Count; i++) {
+				var s = all[i];
+				bool isPrim = s.StateFlags.HasFlag(DisplayDeviceStateFlags.PrimaryDevice);
+				string name = $"{s.DeviceName}{(isPrim ? " (Primary)" : "")}";
+				string desc = $"{s.DeviceString}";
+				list.Add((i+1,name,desc));
+			}
+
+			sb.WL(level,"Primary","Select the primary monitor");
+			sb.PrintListWithBullets(list,level);
+		}
+		*/
 
 		const int ColumnOffset = 30;
 		public static StringBuilder WL(this StringBuilder sb, int level, string def, string desc)
