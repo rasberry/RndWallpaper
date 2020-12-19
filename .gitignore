@@ -361,3 +361,4 @@ MigrationBackup/
 .vs
 .vscode
 /*.txt
+/*.7z
