@@ -26,10 +26,10 @@ namespace RndWallpaper
 		public delegate bool EnumMonitorsDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData);
 
 		[DllImport("ole32", CharSet = CharSet.Auto, SetLastError = true, CallingConvention = CallingConvention.StdCall)]
-		public static extern int CoInitializeEx([In, Optional] IntPtr pvReserved, [In] COINIT dwCoInit);
+		public static extern uint CoInitializeEx([In, Optional] IntPtr pvReserved, [In] COINIT dwCoInit);
 
 		[DllImport("ole32")]
-		public static extern int CoCreateInstance(
+		public static extern uint CoCreateInstance(
 			[In] ref Guid rclsid,
 			IntPtr pUnkOuter,
 			[MarshalAs(UnmanagedType.I4)] CLSCTX dwClsContext,

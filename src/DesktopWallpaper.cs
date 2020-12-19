@@ -209,8 +209,8 @@ namespace RndWallpaper
 
 		void Init()
 		{
-			int hr = WinMethods.CoInitializeEx(IntPtr.Zero, COINIT.COINIT_APARTMENTTHREADED);
-			Marshal.ThrowExceptionForHR(hr, new IntPtr(-1));
+			uint hr = WinMethods.CoInitializeEx(IntPtr.Zero, COINIT.COINIT_APARTMENTTHREADED);
+			HandleError(hr);
 
 			// DesktopWallpaper Class
 			Guid ClassId = new Guid("C2CF3110-460E-4fc1-B9D0-8A1C0C9CC4BD");
@@ -220,10 +220,10 @@ namespace RndWallpaper
 			Guid InterfaceId = new Guid("C182461F-DFAC-4375-AB6E-4CC45AA7F9CC");
 			IntPtr ppv;
 
-			int hResult = WinMethods.CoCreateInstance(
+			uint hResult = WinMethods.CoCreateInstance(
 				ref ClassId, IntPtr.Zero, CLSCTX.CLSCTX_LOCAL_SERVER, ref InterfaceId, out ppv);
 
-			Marshal.ThrowExceptionForHR(hResult, new IntPtr(-1));
+			HandleError(hResult);
 			Pointer = ppv;
 		}
 
@@ -257,15 +257,16 @@ namespace RndWallpaper
 			IDesktopWallpaperPrivate_Proc24 = 24             /* */
 		}
 
-		delegate int IUnknown_Release(IntPtr thisPtr);
+		delegate uint IUnknown_Release(IntPtr thisPtr);
 		void Release(IntPtr thisPtr)
 		{
 			var vp = GetComOffset(Pointer,ProcOffset.IUnknown_Release);
 			var func = Marshal.GetDelegateForFunctionPointer<IUnknown_Release>(vp);
-			func(Pointer);
+			uint hr = func(Pointer);
+			HandleError(hr);
 		}
 
-		delegate int IDesktopWallpaper_SetWallpaper(IntPtr thisPtr,
+		delegate uint IDesktopWallpaper_SetWallpaper(IntPtr thisPtr,
 			[MarshalAs(UnmanagedType.LPWStr)] string monitorID,
 			[MarshalAs(UnmanagedType.LPWStr)] string wallpaper
 		);
@@ -273,11 +274,11 @@ namespace RndWallpaper
 		{
 			var vp = GetComOffset(Pointer,ProcOffset.IDesktopWallpaper_SetWallpaper);
 			var func = Marshal.GetDelegateForFunctionPointer<IDesktopWallpaper_SetWallpaper>(vp);
-			int hr = func(Pointer,monitorID,wallpaper);
-			Marshal.ThrowExceptionForHR(hr,new IntPtr(-1));
+			uint hr = func(Pointer,monitorID,wallpaper);
+			HandleError(hr);
 		}
 
-		delegate int IDesktopWallpaper_GetMonitorDevicePathAt(IntPtr thisPtr,
+		delegate uint IDesktopWallpaper_GetMonitorDevicePathAt(IntPtr thisPtr,
 			[MarshalAs(UnmanagedType.U4)] uint index,
 			[MarshalAs(UnmanagedType.LPWStr)] out string monitorId
 		);
@@ -285,35 +286,35 @@ namespace RndWallpaper
 		{
 			var vp = GetComOffset(Pointer,ProcOffset.IDesktopWallpaper_GetMonitorDevicePathAt);
 			var func = Marshal.GetDelegateForFunctionPointer<IDesktopWallpaper_GetMonitorDevicePathAt>(vp);
-			int hr = func(Pointer,index, out string monitorId);
-			Marshal.ThrowExceptionForHR(hr,new IntPtr(-1));
+			uint hr = func(Pointer,index, out string monitorId);
+			HandleError(hr);
 			return monitorId;
 		}
 
-		delegate int IDesktopWallpaper_GetMonitorDevicePathCount(IntPtr thisPtr,
+		delegate uint IDesktopWallpaper_GetMonitorDevicePathCount(IntPtr thisPtr,
 			[MarshalAs(UnmanagedType.U4)] out uint count
 		);
 		public uint GetMonitorDevicePathCount()
 		{
 			var vp = GetComOffset(Pointer,ProcOffset.IDesktopWallpaper_GetMonitorDevicePathCount);
 			var func = Marshal.GetDelegateForFunctionPointer<IDesktopWallpaper_GetMonitorDevicePathCount>(vp);
-			int hr = func(Pointer,out uint count);
-			Marshal.ThrowExceptionForHR(hr,new IntPtr(-1));
+			uint hr = func(Pointer,out uint count);
+			HandleError(hr);
 			return count;
 		}
 
-		delegate int IDesktopWallpaper_SetPosition(IntPtr thisPtr,
+		delegate uint IDesktopWallpaper_SetPosition(IntPtr thisPtr,
 			[MarshalAs(UnmanagedType.I4)] int position
 		);
 		public void SetPosition(DesktopWallpaperPosition position)
 		{
 			var vp = GetComOffset(Pointer,ProcOffset.IDesktopWallpaper_SetPosition);
 			var func = Marshal.GetDelegateForFunctionPointer<IDesktopWallpaper_SetPosition>(vp);
-			int hr = func(Pointer,(int)position);
-			Marshal.ThrowExceptionForHR(hr,new IntPtr(-1));
+			uint hr = func(Pointer,(int)position);
+			HandleError(hr);
 		}
 
-		delegate int IDesktopWallpaperPrivate_GetMonitorNumber(IntPtr thisPtr,
+		delegate uint IDesktopWallpaperPrivate_GetMonitorNumber(IntPtr thisPtr,
 			[MarshalAs(UnmanagedType.LPWStr)] string monitorID,
 			[MarshalAs(UnmanagedType.I4)] out int monitorNum
 		);
@@ -321,8 +322,8 @@ namespace RndWallpaper
 		{
 			var vp = GetComOffset(Pointer,ProcOffset.IDesktopWallpaperPrivate_GetMonitorNumber);
 			var func = Marshal.GetDelegateForFunctionPointer<IDesktopWallpaperPrivate_GetMonitorNumber>(vp);
-			int hr = func(Pointer,monitorID, out int monitorNum);
-			Marshal.ThrowExceptionForHR(hr,new IntPtr(-1));
+			uint hr = func(Pointer,monitorID, out int monitorNum);
+			HandleError(hr);
 			return monitorNum;
 		}
 
@@ -334,6 +335,32 @@ namespace RndWallpaper
 		static unsafe IntPtr GetComOffset(IntPtr ptr, ProcOffset offset)
 		{
 			return *((*(IntPtr**)ptr) + (int)offset);
+		}
+
+		static void HandleError(uint hResult)
+		{
+			int hr = unchecked((int)hResult);
+			try {
+				Marshal.ThrowExceptionForHR(hr,new IntPtr(-1));
+			}
+			catch(Exception ex) {
+				throw new InteropException(hResult,ex);
+			}
+		}
+
+		//wrapping COMException so we can get a better message
+		class InteropException : Exception
+		{
+			public InteropException(uint hResult, Exception innerException)
+				: base(BetterMessage(hResult), innerException)
+			{
+			}
+
+			static string BetterMessage(uint hResult)
+			{
+				var mess = WinHResult.MessageFromHResult(hResult);
+				return $"Error 0x{hResult,0:X8} {mess}";
+			}
 		}
 
 		void Dispose(bool disposing)
