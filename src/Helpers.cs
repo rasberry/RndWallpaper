@@ -1,13 +1,6 @@
 using System;
-using System.Drawing;
-using System.IO;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using Microsoft.Win32;
-using Windows.Storage;
-using Windows.System.UserProfile;
 
 namespace RndWallpaper
 {
@@ -25,12 +18,6 @@ namespace RndWallpaper
 			return false;
 		}
 
-		public static IDesktopWallpaperPrivate GetWallPaperInstance()
-		{
-			var wp = (IDesktopWallpaperPrivate)new DesktopWallpaperClass();
-			return wp;
-		}
-
 		public static DesktopWallpaperPosition MapStyle(PickWallpaperStyle style)
 		{
 			switch(style) {
@@ -44,5 +31,11 @@ namespace RndWallpaper
 			return DesktopWallpaperPosition.Fill;
 		}
 
+		public static uint GetMonitorCount(DesktopWallpaperClass wp)
+		{
+			uint al = (uint)Screen.AllScreens.Length;
+			uint wl = wp.GetMonitorDevicePathCount();
+			return Math.Min(al,wl);
+		}
 	}
 }

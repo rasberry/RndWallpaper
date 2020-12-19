@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Windows.Forms;
 
 namespace RndWallpaper
 {
@@ -32,8 +32,14 @@ namespace RndWallpaper
 				return;
 			}
 
-			var wp = (IDesktopWallpaperPrivate)(new DesktopWallpaperClass());
-			uint dcount = wp.GetMonitorDevicePathCount();
+			using(var wp = new DesktopWallpaperClass()) {
+				ChangeBackground(wp);
+			}
+		}
+
+		static void ChangeBackground(DesktopWallpaperClass wp)
+		{
+			uint dcount = Helpers.GetMonitorCount(wp);
 			if (dcount < 1) {
 				Log.NoMonitors();
 				return;
@@ -132,18 +138,19 @@ namespace RndWallpaper
 				return false;
 			}
 
-			var wp = Helpers.GetWallPaperInstance();
-			uint dcount = wp.GetMonitorDevicePathCount();
-			for(uint m=0; m<dcount; m++) {
-				string dname = wp.GetMonitorDevicePathAt(m);
-				int dnum = wp.GetMonitorNumber(dname); // undocumented :-o
-				if (dnum < 1 || dnum > dcount) {
-					Log.InvalidMonitorNum(dnum);
-					return false;
-				}
-				if (dnum == (int)pickMon) {
-					MonitorId = dname;
-					break;
+			using(var wp = new DesktopWallpaperClass()) {
+				uint dcount = Helpers.GetMonitorCount(wp);
+				for(uint m=0; m<dcount; m++) {
+					string dname = wp.GetMonitorDevicePathAt(m);
+					int dnum = wp.GetMonitorNumber(dname); // undocumented :-o
+					if (dnum < 1 || dnum > dcount) {
+						Log.InvalidMonitorNum(dnum);
+						return false;
+					}
+					if (dnum == (int)pickMon) {
+						MonitorId = dname;
+						break;
+					}
 				}
 			}
 

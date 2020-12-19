@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifests -->
+<!-- This file is needed so that the monitor dimensions work as expected -->
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
   <assemblyIdentity version="1.0.0.0" name="RndWallpaper.app"/>
   <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
