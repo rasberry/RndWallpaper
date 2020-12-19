@@ -10,6 +10,17 @@ namespace RndWallpaper
 	{
 		static void Main(string[] args)
 		{
+			/*
+			for(int e=0; e<0x7FFFFFF; e++) {
+				uint err = 0x80000000u | (uint)e;
+				var wh = new WinHResult(err);
+				if (!wh.Message.StartsWith("Unknown ")) {
+					var f = WinHResult.FacilityFromHResult(err);
+					Log.Debug($"{err,0:X}\t{f}\t{wh.Message}");
+				}
+			}
+			return;
+			*/
 			try {
 				MainMain(args);
 			}

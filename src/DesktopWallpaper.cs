@@ -209,7 +209,7 @@ namespace RndWallpaper
 
 		void Init()
 		{
-			int hr = WindowsMethods.CoInitializeEx(IntPtr.Zero, COINIT.COINIT_APARTMENTTHREADED);
+			int hr = WinMethods.CoInitializeEx(IntPtr.Zero, COINIT.COINIT_APARTMENTTHREADED);
 			Marshal.ThrowExceptionForHR(hr, new IntPtr(-1));
 
 			// DesktopWallpaper Class
@@ -220,7 +220,7 @@ namespace RndWallpaper
 			Guid InterfaceId = new Guid("C182461F-DFAC-4375-AB6E-4CC45AA7F9CC");
 			IntPtr ppv;
 
-			int hResult = WindowsMethods.CoCreateInstance(
+			int hResult = WinMethods.CoCreateInstance(
 				ref ClassId, IntPtr.Zero, CLSCTX.CLSCTX_LOCAL_SERVER, ref InterfaceId, out ppv);
 
 			Marshal.ThrowExceptionForHR(hResult, new IntPtr(-1));

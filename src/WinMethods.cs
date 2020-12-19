@@ -1,9 +1,10 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace RndWallpaper
 {
-	public static class WindowsMethods
+	public static class WinMethods
 	{
 		[DllImport("user32", CharSet = CharSet.Auto)]
 		public static extern bool GetMonitorInfo(HandleRef hMonitor, ref MonitorInfoEx lpmi);
@@ -34,5 +35,17 @@ namespace RndWallpaper
 			[MarshalAs(UnmanagedType.I4)] CLSCTX dwClsContext,
 			[In] ref Guid riid,
 			[Out] out IntPtr ppv);
+
+		[DllImport("kernel32", SetLastError = true)]
+		public static extern uint FormatMessage(
+			[MarshalAs(UnmanagedType.U4)] Format_Message_Flags dwFlags,
+			IntPtr lpSource,
+			uint dwMessageId,
+			uint dwLanguageId,
+			[Out] StringBuilder lpBuffer,
+			uint nSize,
+			string[] Arguments
+		);
+
 	}
 }

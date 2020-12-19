@@ -26,7 +26,7 @@ namespace RndWallpaper
 
 
 		readonly static HandleRef NullHandleRef = new HandleRef(null, IntPtr.Zero);
-		static bool multiMonitorSupport = (WindowsMethods.GetSystemMetrics(SM_CMONITORS) != 0);
+		static bool multiMonitorSupport = (WinMethods.GetSystemMetrics(SM_CMONITORS) != 0);
 		static Screen[] screens;
 
 		internal Screen(IntPtr monitor) : this(monitor, IntPtr.Zero) {}
@@ -41,7 +41,7 @@ namespace RndWallpaper
 			}
 			else {
 				var info = new MonitorInfoEx(); info.Init();
-				WindowsMethods.GetMonitorInfo(new HandleRef(null, monitor), ref info);
+				WinMethods.GetMonitorInfo(new HandleRef(null, monitor), ref info);
 				bounds = info.Monitor; //implicit conversion
 				primary = ((info.Flags & MONITORINFOF_PRIMARY) != 0);
 
@@ -49,16 +49,16 @@ namespace RndWallpaper
 				deviceName = deviceName.TrimEnd((char)0);
 
 				if (hdc == IntPtr.Zero) {
-					screenDC = WindowsMethods.CreateDC(deviceName, null, null, IntPtr.Zero);
+					screenDC = WinMethods.CreateDC(deviceName, null, null, IntPtr.Zero);
 				}
 			}
 			hmonitor = monitor;
 
-			this.bitDepth = WindowsMethods.GetDeviceCaps(new HandleRef(null, screenDC), DeviceCap.BITSPIXEL);
-			this.bitDepth *= WindowsMethods.GetDeviceCaps(new HandleRef(null, screenDC), DeviceCap.PLANES);
+			this.bitDepth = WinMethods.GetDeviceCaps(new HandleRef(null, screenDC), DeviceCap.BITSPIXEL);
+			this.bitDepth *= WinMethods.GetDeviceCaps(new HandleRef(null, screenDC), DeviceCap.PLANES);
 
 			if (hdc != screenDC) {
-				WindowsMethods.DeleteDC(new HandleRef(null, screenDC));
+				WinMethods.DeleteDC(new HandleRef(null, screenDC));
 			}
 		}
 
@@ -75,8 +75,8 @@ namespace RndWallpaper
 		{
 			if (multiMonitorSupport) {
 				MonitorEnumCallback closure = new MonitorEnumCallback();
-				WindowsMethods.EnumMonitorsDelegate proc = new WindowsMethods.EnumMonitorsDelegate(closure.Callback);
-				WindowsMethods.EnumDisplayMonitors(NullHandleRef, IntPtr.Zero, proc, IntPtr.Zero);
+				WinMethods.EnumMonitorsDelegate proc = new WinMethods.EnumMonitorsDelegate(closure.Callback);
+				WinMethods.EnumDisplayMonitors(NullHandleRef, IntPtr.Zero, proc, IntPtr.Zero);
 
 				if (closure.ScreenList.Count > 0) {
 					Screen[] temp = new Screen[closure.ScreenList.Count];
@@ -94,8 +94,8 @@ namespace RndWallpaper
 
 		static Size PrimaryMonitorSize {
 			get {
-				int x = WindowsMethods.GetSystemMetrics(SM_CXSCREEN);
-				int y = WindowsMethods.GetSystemMetrics(SM_CYSCREEN);
+				int x = WinMethods.GetSystemMetrics(SM_CXSCREEN);
+				int y = WinMethods.GetSystemMetrics(SM_CYSCREEN);
 				return new Size(x,y);
 			}
 		}

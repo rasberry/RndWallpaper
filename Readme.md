@@ -40,3 +40,5 @@ Available Monitors:
 * maybe add a way to download images from some sources (not sure where tho)
 * add a way to change the lock screen also
   * what about the login screen ? (is that different ?)
+* maybe add generators that keep state and advance each time the background is generated
+  * could be several that can be cycled through
