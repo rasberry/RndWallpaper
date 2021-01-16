@@ -10,6 +10,7 @@
   <ItemGroup>
     <!-- <PackageReference Include="Microsoft.DotNet.ILCompiler" Version="1.0.0-alpha-*" /> -->
     <PackageReference Include="Microsoft.DotNet.ILCompiler" Version="6.0.0-alpha.*" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.2" />
   </ItemGroup>
 
   <!-- uncomment to output native compile messages -->

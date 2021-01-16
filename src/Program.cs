@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using SixLabors.ImageSharp;
 
 namespace RndWallpaper
 {
@@ -48,6 +49,15 @@ namespace RndWallpaper
 
 			if (!FillPlan(dcount,out string[] thePlan)) {
 				return;
+			}
+
+			if (Options.DetectPanorama) {
+				var info = Image.Identify(thePlan[0]);
+				double iRatio = (double)info.Width / info.Height;
+				// Log.Debug($"ratio is {iRatio} vs {Options.PanoramaRatio}");
+				if (iRatio > Options.PanoramaRatio) {
+					Options.Style = PickWallpaperStyle.Span;
+				}
 			}
 
 			if (Options.DelayMS > 0) {
@@ -122,10 +132,6 @@ namespace RndWallpaper
 				for(int i=0; i<monitorCount; i++) {
 					thePlan[i] = Options.PicPath;
 				}
-			}
-
-			if (Options.DetectPanorama) {
-				//TODO need to check dimensions thePlan[0] and see if it's greater than PanoramaRatio
 			}
 
 			return true;

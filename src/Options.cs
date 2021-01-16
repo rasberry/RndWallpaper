@@ -64,7 +64,6 @@ namespace RndWallpaper
 			}
 			if (p.Has("-sa").IsGood()) {
 				DetectPanorama = true;
-				Style = PickWallpaperStyle.Span; //overrides -s
 				//assuming bad values mean the optional parameter was not supplied
 				p.Default("-sa",out PanoramaRatio,2.0,null,false);
 				if (!double.IsNormal(PanoramaRatio) || PanoramaRatio < double.Epsilon) {
