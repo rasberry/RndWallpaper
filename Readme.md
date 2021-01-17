@@ -5,8 +5,9 @@ A utility for changing the desktop background image for in Windows
 ```
 RndWallpaper [options] (path of image or folder)
 Options:
- -d  (number)                 Delay number of seconds (default 0)
+ -d  (integer)                Delay number of seconds (default 0)
  -s  (style)                  Style of wallpaper (default 'Fill')
+ -sa [ratio]                  Detect panorama images when w/h > ratio (default 2.0)
  -m  (monitor)                Apply image only to a single monitor
  -rs (integer)                Random seed value (default system suplied)
  -fs                          When folder given, use same image for all monitors
@@ -45,6 +46,6 @@ Available Monitors:
 * maybe try UWP again. ?
   * https://blog.pieeatingninjas.be/2018/04/05/creating-a-uwp-console-app-in-c/
 * support looking in subfolders
-* support panorama images
-  * detect when to do span vs fit
-* add support for resizing ?
+* maybe add support for custom fitting options
+  * not sure what those would be
+  * seam carving resize ?
