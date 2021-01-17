@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 
 namespace RndWallpaper
 {
@@ -56,7 +55,8 @@ namespace RndWallpaper
 		}
 
 		//find or default a parameter with one argument
-		public Result Default<T>(string @switch,out T val,T def = default(T),Parser<T> par = null)
+		public Result Default<T>(string @switch,out T val,T def = default(T),Parser<T> par = null,
+			bool logMessages = true)
 		{
 			val = def;
 			int i = Args.IndexOf(@switch);
@@ -64,14 +64,13 @@ namespace RndWallpaper
 				return Result.Missing;
 			}
 			if (i+1 >= Args.Count) {
-				Log.MissingArgument(@switch);
+				if (logMessages) { Log.MissingArgument(@switch); }
 				return Result.Invalid;
 			}
 			if (par == null) { par = TryParse; }
 			bool worked = par(Args[i+1],out val);
-			// Log.Debug($"Default {@switch} {worked} {Args[i+1]}");
 			if (!par(Args[i+1],out val)) {
-				Log.CouldNotParse(@switch,Args[i+1]);
+				if (logMessages) { Log.CouldNotParse(@switch,Args[i+1]); }
 				return Result.Invalid;
 			}
 			Args.RemoveAt(i+1);

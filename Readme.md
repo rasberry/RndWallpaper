@@ -42,3 +42,9 @@ Available Monitors:
   * what about the login screen ? (is that different ?)
 * maybe add generators that keep state and advance each time the background is generated
   * could be several that can be cycled through
+* maybe try UWP again. ?
+  * https://blog.pieeatingninjas.be/2018/04/05/creating-a-uwp-console-app-in-c/
+* support looking in subfolders
+* support panorama images
+  * detect when to do span vs fit
+* add support for resizing ?
