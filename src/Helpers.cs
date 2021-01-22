@@ -1,11 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace RndWallpaper
 {
 	public static class Helpers
 	{
+		public static bool IsFileSupported(string file)
+		{
+			var norm = file.ToLowerInvariant();
+			string ext = Path.GetExtension(norm);
+			return IsExtensionSupported(ext);
+		}
+
 		public static bool IsExtensionSupported(string ext)
 		{
 			switch(ext) {

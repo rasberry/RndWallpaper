@@ -106,7 +106,6 @@ namespace RndWallpaper
 	}
 	#endif
 
-	#if falase
 	[ComImport, Guid("C182461F-DFAC-4375-AB6E-4CC45AA7F9CC"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 	public interface IDesktopWallpaperPrivate
 	{
@@ -184,8 +183,6 @@ namespace RndWallpaper
 		void Proc23();
 		void Proc24();
 	}
-
-	#endif
 
 	#if false
 	//TODO not working with native compilation 6.0.0-alpha.*

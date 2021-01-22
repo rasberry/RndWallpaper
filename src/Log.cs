@@ -51,8 +51,8 @@ namespace RndWallpaper
 		public static void InvalidMonitorNum(int dnum) {
 			Log.Error($"Invalid monitor number '{dnum}' encountered");
 		}
-		public static void NoImagesFound(string path) {
-			Log.Error($"No supported images found in {path}");
+		public static void NoImagesFound() {
+			Log.Error($"No supported images found");
 		}
 		public static void FormatNotSupported(string ext) {
 			Log.Error($"Image format '{ext}' is not supported");

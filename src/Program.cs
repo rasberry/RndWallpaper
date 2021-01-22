@@ -97,41 +97,45 @@ namespace RndWallpaper
 		static bool FillPlan(uint monitorCount, out string[] thePlan)
 		{
 			thePlan = new string[monitorCount];
+			var list = Options.PicPaths;
+			var imgList = new List<string>();
 
-			if (Options.IsFolder) {
-				var rawList = Directory.GetFileSystemEntries(Options.PicPath);
-				var imgList = rawList.Where(file => {
-					var norm = file.ToLowerInvariant();
-					string ext = Path.GetExtension(norm);
-					return Helpers.IsExtensionSupported(ext);
-				}).ToList();
+			var op = new EnumerationOptions {
+				RecurseSubdirectories = Options.RecurseFolder
+			};
 
-				int count = imgList.Count;
-				if (count < 1) {
-					Log.NoImagesFound(Options.PicPath);
-					return false;
+			//go backwards so we can append items
+			foreach(string path in list) {
+				if (Directory.Exists(path)) {
+					//expand folder into files
+					var rawList = Directory.GetFiles(path,"*.*",op);
+					var fileList = rawList.Where(file => Helpers.IsFileSupported(file));
+					imgList.AddRange(fileList);
 				}
-
-				var rnd = Options.RndSeed.HasValue ? new Random(Options.RndSeed.Value) : new Random();
-				int index = 0;
-				for(int i=0; i<monitorCount; i++) {
-					if (!Options.UseSameImage || i == 0) {
-						index = rnd.Next(count);
+				else {
+					//already a file so just check if it's supported
+					if (!Helpers.IsFileSupported(path)) {
+						string ext = Path.GetExtension(path);
+						Log.FormatNotSupported(ext);
+						return false;
 					}
-					thePlan[i] = imgList[index];
+					imgList.Add(path);
 				}
 			}
-			else {
-				var norm = Options.PicPath.ToLowerInvariant();
-				string ext = Path.GetExtension(norm);
-				if (!Helpers.IsExtensionSupported(ext)) {
-					Log.FormatNotSupported(ext);
-					return false;
-				}
 
-				for(int i=0; i<monitorCount; i++) {
-					thePlan[i] = Options.PicPath;
+			int count = imgList.Count;
+			if (count < 1) {
+				Log.NoImagesFound();
+				return false;
+			}
+
+			var rnd = Options.RndSeed.HasValue ? new Random(Options.RndSeed.Value) : new Random();
+			int index = 0;
+			for(int i=0; i<monitorCount; i++) {
+				if (!Options.UseSameImage || i == 0) {
+					index = rnd.Next(count);
 				}
+				thePlan[i] = imgList[index];
 			}
 
 			return true;
