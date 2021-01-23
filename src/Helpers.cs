@@ -20,7 +20,7 @@ namespace RndWallpaper
 				case ".bmp":  case ".dib":  case ".gif":
 				case ".jfif": case ".jpe":  case ".jpeg":
 				case ".jpg":  case ".png":  case ".tif":
-				case ".tiff": case ".wdp":
+				case ".tiff": case ".wdp":  case ".webp":
 					return true;
 			}
 			return false;
