@@ -179,7 +179,6 @@ namespace RndWallpaper
 				sb.WL(level,"Physical Width (mm)"  ,current.PhysicalWidthMm.ToString());
 				sb.WL(level,"Physical Height (mm)" ,current.PhysicalHeightMm.ToString());
 				sb.WL(level,"Vertical Refresh (Hz)",current.VerticalRefresh.ToString());
-				sb.WL(level,"Technology"           ,current.Technology.ToString());
 			}
 		}
 	}

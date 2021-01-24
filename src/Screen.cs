@@ -34,7 +34,7 @@ namespace RndWallpaper
 			}
 			else {
 				var info = new MonitorInfoEx(); info.Init();
-				WinMethods.GetMonitorInfo(new HandleRef(null, monitor), ref info);
+				WinMethods.GetMonitorInfo(ToHR(monitor), ref info);
 				bounds = info.Monitor; //implicit conversion
 				primary = ((info.Flags & MONITORINFOF_PRIMARY) != 0);
 				deviceName = new string(info.DeviceName);
@@ -51,62 +51,6 @@ namespace RndWallpaper
 			this.vRfresh   = WinMethods.GetDeviceCaps(ToHR(screenDC), DeviceCap.VREFRESH);
 			this.pWidthMm  = WinMethods.GetDeviceCaps(ToHR(screenDC), DeviceCap.HORZSIZE);
 			this.pHeightMm = WinMethods.GetDeviceCaps(ToHR(screenDC), DeviceCap.VERTSIZE);
-
-			bool gnopmfh = WinMethods.GetNumberOfPhysicalMonitorsFromHMONITOR(new HandleRef(null, hmonitor),out uint pCount);
-			if (!gnopmfh) {
-				int err = Marshal.GetLastWin32Error();
-				Log.Debug($"gnopmfh err={err:X}");
-			}
-			Log.Debug($"phys count = {pCount} gnopmfh = {gnopmfh}");
-			var physMonitorInfo = new PHYSICAL_MONITOR[pCount];
-			bool gpmfh = WinMethods.GetPhysicalMonitorsFromHMONITOR(ToHR(hmonitor), pCount, physMonitorInfo);
-			if (!gpmfh) {
-				int err = Marshal.GetLastWin32Error();
-				Log.Debug($"gpmfh err={err:X}");
-			}
-			Log.Debug($"gpmfh = {gpmfh}");
-			foreach(var pmon in physMonitorInfo) {
-				Log.Debug($"szp = {pmon.szPhysicalMonitorDescription}");
-				bool gmc = WinMethods.GetMonitorCapabilities(ToHR(pmon.hPhysicalMonitor), out var pCaps, out var pTemp);
-				Log.Debug($"gmc = {gmc}");
-				if (!gmc) {
-					int err = Marshal.GetLastWin32Error();
-					Log.Debug($"gmc err={err:X}");
-				}
-				Log.Debug($"pCaps = {pCaps} pTemp = {pTemp}");
-
-
-				bool gmtt = WinMethods.GetMonitorTechnologyType(ToHR(pmon.hPhysicalMonitor),out techType);
-				if (!gmtt) {
-					int err = Marshal.GetLastWin32Error();
-					Log.Debug($"gmtt err={err:X}");
-				}
-				Log.Debug($"techtype = {techType} gmtt = {gmtt}");
-
-				bool gmb = WinMethods.GetMonitorBrightness(ToHR(pmon.hPhysicalMonitor),out uint bmin, out uint bcurr, out uint bmax);
-				if (!gmb) {
-					int err = Marshal.GetLastWin32Error();
-					Log.Debug($"gmb err={err:X}");
-				}
-				Log.Debug($"brightmess = [{bmin},{bcurr},{bmax}] gmb = {gmb}");
-
-				bool gmc2 = WinMethods.GetMonitorColorTemperature(ToHR(pmon.hPhysicalMonitor),out var ctemp);
-				if (!gmc2) {
-					int err = Marshal.GetLastWin32Error();
-					Log.Debug($"gmc2 err={err:X}");
-				}
-				Log.Debug($"colortemp = {ctemp} gmc = {gmc2}");
-
-				bool gmc3 = WinMethods.GetMonitorContrast(ToHR(pmon.hPhysicalMonitor),out uint cmin, out uint ccurr, out uint cmax);
-				if (!gmc3) {
-					int err = Marshal.GetLastWin32Error();
-					Log.Debug($"gmc3 err={err:X}");
-				}
-				Log.Debug($"contrast = [{cmin},{ccurr},{cmax}] gmc3 = {gmc3}");
-			}
-
-			bool dpm = WinMethods.DestroyPhysicalMonitors(pCount,physMonitorInfo);
-			Log.Debug($"dpm = {dpm}");
 
 			if (hdc != screenDC) {
 				WinMethods.DeleteDC(ToHR(screenDC));
@@ -164,7 +108,6 @@ namespace RndWallpaper
 		readonly int vRfresh;
 		readonly int pWidthMm;
 		readonly int pHeightMm;
-		readonly DisplayTechnologyType techType;
 
 		public int BitsPerPixel     { get { return bitDepth; } }
 		public Rectangle Bounds     { get { return bounds; } }
@@ -173,7 +116,6 @@ namespace RndWallpaper
 		public int VerticalRefresh  { get { return vRfresh; } }
 		public int PhysicalWidthMm  { get { return pWidthMm; } }
 		public int PhysicalHeightMm { get { return pHeightMm; } }
-		public DisplayTechnologyType Technology { get { return techType; } }
 
 		class MonitorEnumCallback {
 			public List<Screen> ScreenList = new List<Screen>();
