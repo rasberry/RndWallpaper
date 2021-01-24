@@ -140,5 +140,26 @@ namespace RndWallpaper
 
 			return false;
 		}
+
+		public static bool TryParseEnumFirstLetter<T>(string arg, out T val) where T : struct
+		{
+			bool worked = Enum.TryParse<T>(arg,true,out val);
+			//try to match the first letter if normal enum parse fails
+			if (!worked) {
+				string f = arg.Substring(0,1);
+				foreach(T e in Enum.GetValues(typeof(T))) {
+					string name = e.ToString();
+					if (name.Equals("none",StringComparison.OrdinalIgnoreCase)) {
+						continue;
+					}
+					string n = name.Substring(0,1);
+					if (f.Equals(n,StringComparison.OrdinalIgnoreCase)) {
+						val = e;
+						return true;
+					}
+				}
+			}
+			return worked;
+		}
 	}
 }

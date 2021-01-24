@@ -7,6 +7,73 @@ namespace RndWallpaper
 {
 	public static class Options
 	{
+		public static void Usage()
+		{
+			var sb = new StringBuilder();
+			sb.WL(0,$"{nameof(RndWallpaper)} (action) [options]");
+			sb.WL();
+			sb.WL(0,"Available Actions:");
+			sb.PrintEnum<PickAction>(1,MapActionDesc,MapActionName);
+			sb.WL();
+			sb.WL(0,$"{PickAction.Wallpaper} [options] (file or folder) [ .. additional files and/or folders .. ]");
+			sb.WL(1,"-d  (integer)" ,"Delay number of seconds (default 0)");
+			sb.WL(1,"-s  (style)"   ,"Style of wallpaper (default 'Fill')");
+			sb.WL(1,"-r"            ,"Include subdirectories when folder is specified");
+			sb.WL(1,"-sa [ratio]"   ,"Detect panorama images when w/h > ratio (default 2.0)");
+			sb.WL(1,"-m  (monitor)" ,"Apply image only to a single monitor");
+			sb.WL(1,"-rs (integer)" ,"Random seed value (default system suplied)");
+			sb.WL(1,"-fs"           ,"When folder given, use same image for all monitors");
+			sb.WL();
+			sb.WL(0,"Available Styles:");
+			sb.PrintEnum<PickWallpaperStyle>(1);
+			sb.WL();
+			sb.WL(0,$"{PickAction.Info} [options] (file or folder) [ .. additional files and/or folders .. ]");
+			sb.WL(1,"-m" ,"Show monitor information");
+			sb.WL(1,"-w" ,"Show current wallpapers");
+			sb.WL(1,"-i" ,"Show list of files found in given files / folders");
+			sb.WL(1,"-r" ,"Include subdirectories when folder is specified");
+			sb.WL();
+			sb.WL(0,$"{PickAction.Download} [options] (pre-defined source or configuration file)");
+			sb.WL(1,"-o (folder)" ,"Output folder for download file (default current folder)");
+			sb.WL();
+			sb.WL(0,"Available Sources:");
+			sb.PrintEnum<PickSource>(1,MapSourceDesc);
+			//sb.WL();
+			//sb.WL(0,"Available Monitors:");
+			//sb.PrintMonitors(1);
+
+			Log.Message(sb.ToString());
+		}
+
+		static string MapActionDesc(PickAction act)
+		{
+			switch(act) {
+			case PickAction.Wallpaper: return "Change the wallpaper";
+			case PickAction.Download:  return "Download an image from a configured source";
+			case PickAction.Info:      return "Show information related to wallpaper";
+			}
+			return null;
+		}
+		static string MapActionName(PickAction act)
+		{
+			switch(act) {
+			case PickAction.Wallpaper: return "(W)allpaper";
+			case PickAction.Download:  return "(D)ownload";
+			case PickAction.Info:      return "(I)nfo";
+			}
+			return null;
+		}
+
+		static string MapSourceDesc(PickSource src)
+		{
+			switch(src) {
+			case PickSource.Bing:     return "Bing image of the day api";
+			case PickSource.RSS:      return "RSS image feed";
+			case PickSource.Windows:  return "Windows wallpaper archive";
+			}
+			return null;
+		}
+
 		static bool SelectMonitor(PickMonitor pickMon)
 		{
 			var all = Screen.AllScreens;
@@ -48,7 +115,21 @@ namespace RndWallpaper
 		public static bool ParseArgs(string[] args)
 		{
 			var p = new Params(args);
+			if (p.Expect<PickAction>(out SelectedAction,"action",
+				OptionHelpers.TryParseEnumFirstLetter).IsBad()) {
+				return false;
+			}
 
+			switch(SelectedAction) {
+				case PickAction.Wallpaper: return ParseWallpaper(p);
+				case PickAction.Info:      return ParseInfo(p);
+				case PickAction.Download:  return ParseDownload(p);
+			}
+			return false;
+		}
+
+		static bool ParseWallpaper(Params p)
+		{
 			if (p.Default("-d", out double delaySec).IsInvalid()) {
 				return false;
 			}
@@ -79,6 +160,42 @@ namespace RndWallpaper
 				UseSameImage = true;
 			}
 
+			if (!SlurpFileFolders(p)) {
+				return false;
+			}
+
+			//figure out which monitor device to use
+			if (Monitor != PickMonitor.All) {
+				if (!SelectMonitor(Monitor)) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		static bool ParseInfo(Params p)
+		{
+			ShowMonitorInfo = p.Has("-m").IsGood();
+			ShowWallInfo =    p.Has("-w").IsGood();
+			ShowFileInfo =    p.Has("-i").IsGood();
+			RecurseFolder =   p.Has("-r").IsGood();
+
+			if (!SlurpFileFolders(p)) {
+				return false;
+			}
+
+			return true;
+		}
+
+		static bool ParseDownload(Params p)
+		{
+
+			return false;
+		}
+
+		static bool SlurpFileFolders(Params p)
+		{
 			//assume the rest are images or paths
 			PicPaths.AddRange(p.Remaining());
 			if (PicPaths.Count < 1) {
@@ -95,39 +212,10 @@ namespace RndWallpaper
 				}
 				PicPaths[i] = full;
 			}
-
-			//figure out which monitor device to use
-			if (Monitor != PickMonitor.All) {
-				if (!SelectMonitor(Monitor)) {
-					return false;
-				}
-			}
-
 			return true;
 		}
 
-		public static void Usage()
-		{
-			var sb = new StringBuilder();
-			sb.WL(0,$"{nameof(RndWallpaper)} [options] (path of image or folder) [ .. additional paths or images ..])");
-			sb.WL(0,"Options:");
-			sb.WL(1,"-d  (integer)" ,"Delay number of seconds (default 0)");
-			sb.WL(1,"-s  (style)"   ,"Style of wallpaper (default 'Fill')");
-			sb.WL(1,"-r"            ,"Include subdirectories when folder is specified");
-			sb.WL(1,"-sa [ratio]"   ,"Detect panorama images when w/h > ratio (default 2.0)");
-			sb.WL(1,"-m  (monitor)" ,"Apply image only to a single monitor");
-			sb.WL(1,"-rs (integer)" ,"Random seed value (default system suplied)");
-			sb.WL(1,"-fs"           ,"When folder given, use same image for all monitors");
-			sb.WL();
-			sb.WL(0,"Available Styles:");
-			sb.PrintEnum<PickWallpaperStyle>(1);
-			sb.WL();
-			sb.WL(0,"Available Monitors:");
-			sb.PrintMonitors(1);
-
-			Log.Message(sb.ToString());
-		}
-
+		public static PickAction SelectedAction = PickAction.None;
 		public static PickWallpaperStyle Style = PickWallpaperStyle.None;
 		public static int? RndSeed = null;
 		public static List<string> PicPaths = new List<string>();
@@ -138,5 +226,8 @@ namespace RndWallpaper
 		public static bool DetectPanorama = false;
 		public static double PanoramaRatio = 2.0;
 		public static bool RecurseFolder = false;
+		public static bool ShowMonitorInfo = false;
+		public static bool ShowWallInfo = false;
+		public static bool ShowFileInfo = false;
 	}
 }

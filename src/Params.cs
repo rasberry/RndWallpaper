@@ -96,7 +96,6 @@ namespace RndWallpaper
 		public Result Default<T,U>(string @switch,out T tval, out U uval,
 			T tdef = default(T), U udef = default(U), Func<T,bool> Cond = null,
 			Parser<T> tpar = null, Parser<U> upar = null)
-			where T : IConvertible where U : IConvertible
 		{
 			tval = tdef;
 			uval = udef;
@@ -145,6 +144,15 @@ namespace RndWallpaper
 			return Result.Good;
 		}
 
+		public Result Expect<T>(out T val, string name, Parser<T> par = null)
+		{
+			if (Result.Good != Default(out val,par:par)) {
+				Log.MustProvideInput(name);
+				return Result.Invalid;
+			}
+			return Result.Good;
+		}
+
 		public Result Expect(string @switch)
 		{
 			var has = Has(@switch);
@@ -157,7 +165,7 @@ namespace RndWallpaper
 			return Result.Good;
 		}
 
-		public Result Expect<T>(string @switch, out T val,Parser<T> par = null) where T : IConvertible
+		public Result Expect<T>(string @switch, out T val,Parser<T> par = null)
 		{
 			var has = Default(@switch,out val, par:par);
 			if (Result.Good != has) {
@@ -170,7 +178,6 @@ namespace RndWallpaper
 		}
 
 		public Result Expect<T,U>(string @switch, out T tval, out U uval,Parser<T> tpar = null,Parser<U> upar = null)
-			where T : IConvertible where U : IConvertible
 		{
 			var has = Default(@switch,out tval,out uval, tpar:tpar, upar:upar);
 			if (Result.Good != has) {
