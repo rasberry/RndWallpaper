@@ -206,7 +206,7 @@ namespace RndWallpaper
 
 		void Init()
 		{
-			uint hr = WinMethods.CoInitializeEx(IntPtr.Zero, COINIT.COINIT_APARTMENTTHREADED);
+			uint hr = WinMethods.CoInitializeEx(IntPtr.Zero, COINIT.APARTMENTTHREADED);
 			HandleError(hr);
 
 			// DesktopWallpaper Class
@@ -218,7 +218,7 @@ namespace RndWallpaper
 			IntPtr ppv;
 
 			uint hResult = WinMethods.CoCreateInstance(
-				ref ClassId, IntPtr.Zero, CLSCTX.CLSCTX_LOCAL_SERVER, ref InterfaceId, out ppv);
+				ref ClassId, IntPtr.Zero, CLSCTX.LOCAL_SERVER, ref InterfaceId, out ppv);
 
 			HandleError(hResult);
 			Pointer = ppv;

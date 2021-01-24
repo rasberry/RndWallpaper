@@ -34,8 +34,14 @@ namespace RndWallpaper
 				return;
 			}
 
-			using(var wp = new DesktopWallpaperClass()) {
-				ChangeBackground(wp);
+			switch(Options.SelectedAction) {
+				case PickAction.Wallpaper: {
+					using(var wp = new DesktopWallpaperClass()) {
+						ChangeBackground(wp);
+					}; break;
+				}
+				case PickAction.Download: DownloadWallpaper(); break;
+				case PickAction.Info: ShowInfo(); break;
 			}
 		}
 
@@ -139,6 +145,42 @@ namespace RndWallpaper
 			}
 
 			return true;
+		}
+
+		static void DownloadWallpaper()
+		{
+		}
+
+		static void ShowInfo()
+		{
+			var sb = new StringBuilder();
+			if (Options.ShowMonitorInfo) {
+				sb.WL(0,"Monitor Information:");
+				ShowMonitorInfo(1,sb);
+			}
+
+
+			Log.Message(sb.ToString());
+		}
+
+		static void ShowMonitorInfo(int level, StringBuilder sb)
+		{
+			var all = Screen.AllScreens;
+			for(int m = 0; m < all.Length; m++) {
+				var current = all[m];
+				sb.WL();
+				sb.WL(level,"Device Name:"         ,current.DeviceName);
+				sb.WL(level,"Is Primary:"          ,current.Primary ? "Yes" : "No");
+				sb.WL(level,"Bits per pixel:"      ,current.BitsPerPixel.ToString());
+				sb.WL(level,"Width:"               ,current.Bounds.Width.ToString());
+				sb.WL(level,"Height:"              ,current.Bounds.Height.ToString());
+				sb.WL(level,"X Offset:"            ,current.Bounds.X.ToString());
+				sb.WL(level,"Y Offset:"            ,current.Bounds.Y.ToString());
+				sb.WL(level,"Physical Width (mm)"  ,current.PhysicalWidthMm.ToString());
+				sb.WL(level,"Physical Height (mm)" ,current.PhysicalHeightMm.ToString());
+				sb.WL(level,"Vertical Refresh (Hz)",current.VerticalRefresh.ToString());
+				sb.WL(level,"Technology"           ,current.Technology.ToString());
+			}
 		}
 	}
 }

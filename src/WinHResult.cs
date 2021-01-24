@@ -65,9 +65,9 @@ namespace RndWallpaper
 		static bool TryGetErrorMessage(uint error, StringBuilder sb, out string errorMsg)
 		{
 			errorMsg = "";
-			var flags = Format_Message_Flags.IGNORE_INSERTS
-				| Format_Message_Flags.ARGUMENT_ARRAY
-				| Format_Message_Flags.FROM_SYSTEM;
+			var flags = FormatMessageFlags.IGNORE_INSERTS
+				| FormatMessageFlags.ARGUMENT_ARRAY
+				| FormatMessageFlags.FROM_SYSTEM;
 			uint result = WinMethods.FormatMessage(flags, IntPtr.Zero, error, 0, sb, (uint)sb.Capacity + 1, null);
 			if (result != 0) {
 				//remove trailing junk

@@ -27,6 +27,9 @@ namespace RndWallpaper
 			sb.WL(0,"Available Styles:");
 			sb.PrintEnum<PickWallpaperStyle>(1);
 			sb.WL();
+			sb.WL(0,"Available Monitors:");
+			sb.PrintMonitors(1);
+			sb.WL();
 			sb.WL(0,$"{PickAction.Info} [options] (file or folder) [ .. additional files and/or folders .. ]");
 			sb.WL(1,"-m" ,"Show monitor information");
 			sb.WL(1,"-w" ,"Show current wallpapers");
@@ -38,9 +41,6 @@ namespace RndWallpaper
 			sb.WL();
 			sb.WL(0,"Available Sources:");
 			sb.PrintEnum<PickSource>(1,MapSourceDesc);
-			//sb.WL();
-			//sb.WL(0,"Available Monitors:");
-			//sb.PrintMonitors(1);
 
 			Log.Message(sb.ToString());
 		}
@@ -160,7 +160,7 @@ namespace RndWallpaper
 				UseSameImage = true;
 			}
 
-			if (!SlurpFileFolders(p)) {
+			if (!SlurpFileFolders(p, true)) {
 				return false;
 			}
 
@@ -190,15 +190,17 @@ namespace RndWallpaper
 
 		static bool ParseDownload(Params p)
 		{
-
-			return false;
+			if (p.Default("-o",out OutputLocation,null).IsInvalid()) {
+				return false;
+			}
+			return true;
 		}
 
-		static bool SlurpFileFolders(Params p)
+		static bool SlurpFileFolders(Params p, bool required = false)
 		{
 			//assume the rest are images or paths
 			PicPaths.AddRange(p.Remaining());
-			if (PicPaths.Count < 1) {
+			if (required && PicPaths.Count < 1) {
 				Log.MustProvideInput("one of more images or folder paths");
 				return false;
 			}
@@ -229,5 +231,6 @@ namespace RndWallpaper
 		public static bool ShowMonitorInfo = false;
 		public static bool ShowWallInfo = false;
 		public static bool ShowFileInfo = false;
+		public static string OutputLocation = null;
 	}
 }
