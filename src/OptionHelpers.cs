@@ -45,8 +45,8 @@ namespace RndWallpaper
 				int lpad = pnum.Length < numDigits ? numDigits - pnum.Length : 0;
 				string npad = new string(' ',lpad);
 				var curr = items[i];
-				string pname = items[i].Item2;
-				string pdsc = items[i].Item3;
+				string pname = items[i].Item2 ?? "";
+				string pdsc = items[i].Item3 ?? "";
 				sb.WL(level,$"{npad}{pnum}. {pname}",pdsc);
 			}
 		}
@@ -67,14 +67,14 @@ namespace RndWallpaper
 		}
 
 		const int ColumnOffset = 30;
-		public static StringBuilder WL(this StringBuilder sb, int level, string def, string desc)
+		public static StringBuilder WL(this StringBuilder sb, int level, string def, object desc)
 		{
 			int pad = level;
 			return sb
 				.Append(' ',pad)
 				.Append(def)
 				.Append(' ',ColumnOffset - def.Length - pad)
-				.AppendWrap(ColumnOffset,desc);
+				.AppendWrap(ColumnOffset,desc.ToString());
 		}
 
 		public static StringBuilder WL(this StringBuilder sb, int level, string def)

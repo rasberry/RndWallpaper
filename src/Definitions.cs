@@ -23,7 +23,10 @@ namespace RndWallpaper
 		None = 0,
 		Wallpaper = 1,
 		Info = 2,
-		Download = 3
+		// Download = 3,
+		#if DEBUG
+		Test = 999
+		#endif
 	}
 
 	public enum PickSource

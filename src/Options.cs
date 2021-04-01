@@ -30,17 +30,18 @@ namespace RndWallpaper
 			sb.WL(0,"Available Monitors:");
 			sb.PrintMonitors(1);
 			sb.WL();
-			sb.WL(0,$"{PickAction.Info} [options] (file or folder) [ .. additional files and/or folders .. ]");
+			sb.WL(0,$"{PickAction.Info} [options]");
 			sb.WL(1,"-m" ,"Show monitor information");
 			sb.WL(1,"-w" ,"Show current wallpapers");
-			sb.WL(1,"-i" ,"Show list of files found in given files / folders");
-			sb.WL(1,"-r" ,"Include subdirectories when folder is specified");
+			sb.WL(1,"-i" ,"More info about current wallpaper file(s)");
+			#if false //not implemented yet
 			sb.WL();
 			sb.WL(0,$"{PickAction.Download} [options] (pre-defined source or configuration file)");
 			sb.WL(1,"-o (folder)" ,"Output folder for download file (default current folder)");
 			sb.WL();
 			sb.WL(0,"Available Sources:");
 			sb.PrintEnum<PickSource>(1,MapSourceDesc);
+			#endif
 
 			Log.Message(sb.ToString());
 		}
@@ -49,7 +50,7 @@ namespace RndWallpaper
 		{
 			switch(act) {
 			case PickAction.Wallpaper: return "Change the wallpaper";
-			case PickAction.Download:  return "Download an image from a configured source";
+			// case PickAction.Download:  return "Download an image from a configured source";
 			case PickAction.Info:      return "Show information related to wallpaper";
 			}
 			return null;
@@ -58,7 +59,7 @@ namespace RndWallpaper
 		{
 			switch(act) {
 			case PickAction.Wallpaper: return "(W)allpaper";
-			case PickAction.Download:  return "(D)ownload";
+			// case PickAction.Download:  return "(D)ownload";
 			case PickAction.Info:      return "(I)nfo";
 			}
 			return null;
@@ -123,7 +124,13 @@ namespace RndWallpaper
 			switch(SelectedAction) {
 				case PickAction.Wallpaper: return ParseWallpaper(p);
 				case PickAction.Info:      return ParseInfo(p);
-				case PickAction.Download:  return ParseDownload(p);
+				// case PickAction.Download:  return ParseDownload(p);
+				#if DEBUG
+				case PickAction.Test: {
+					PicPaths = new List<string>(p.Remaining());
+					return true;
+				}
+				#endif
 			}
 			return false;
 		}
@@ -179,10 +186,9 @@ namespace RndWallpaper
 			ShowMonitorInfo = p.Has("-m").IsGood();
 			ShowWallInfo =    p.Has("-w").IsGood();
 			ShowFileInfo =    p.Has("-i").IsGood();
-			RecurseFolder =   p.Has("-r").IsGood();
 
-			if (!SlurpFileFolders(p)) {
-				return false;
+			if (!ShowFileInfo && !ShowWallInfo) {
+				ShowMonitorInfo = true;
 			}
 
 			return true;
