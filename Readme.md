@@ -3,10 +3,16 @@ A utility for changing the desktop background image for in Windows
 
 ## Usage ##
 ```
-RndWallpaper [options] (path of image or folder)
-Options:
+RndWallpaper (action) [options]
+
+Available Actions:
+   1. (W)allpaper             Change the wallpaper
+   2. (I)nfo                  Show information related to wallpaper
+
+Wallpaper [options] (file or folder) [ .. additional files and/or folders .. ]
  -d  (integer)                Delay number of seconds (default 0)
  -s  (style)                  Style of wallpaper (default 'Fill')
+ -r                           Include subdirectories when folder is specified
  -sa [ratio]                  Detect panorama images when w/h > ratio (default 2.0)
  -m  (monitor)                Apply image only to a single monitor
  -rs (integer)                Random seed value (default system suplied)
@@ -25,6 +31,11 @@ Available Monitors:
  1. \\.\DISPLAY1 (Primary)    Depth:32 Size:{X=0,Y=0,Width=1024,Height=768}
  2. \\.\DISPLAY2              Depth:32 Size:{X=1024,Y=0,Width=1024,Height=768}
  ...
+
+Info [options]
+ -m                           Show monitor information
+ -w                           Show current wallpapers
+ -i                           More info about current wallpaper file(s)
 ```
 
 # Build #
@@ -36,7 +47,6 @@ Available Monitors:
 * add more platforms (linux?)
 * add an option to choose sequential images instead of just random ones from a folder
 * maybe add a way to setup an image rss feed by changing windows settings
-* maybe add an information action which shows current settings
 * maybe add a change settings action
 * maybe add a way to download images from some sources (not sure where tho)
 * add a way to change the lock screen also
