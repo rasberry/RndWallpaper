@@ -244,42 +244,42 @@ namespace RndWallpaper
 
 	public enum COINIT : uint //tagCOINIT
 	{
-		COINIT_MULTITHREADED =     0x0, //Initializes the thread for multi-threaded object concurrency.
-		COINIT_APARTMENTTHREADED = 0x2, //Initializes the thread for apartment-threaded object concurrency
-		COINIT_DISABLE_OLE1DDE =   0x4, //Disables DDE for OLE1 support
-		COINIT_SPEED_OVER_MEMORY = 0x8, //Trade memory for speed
+		MULTITHREADED =     0x0, //Initializes the thread for multi-threaded object concurrency.
+		APARTMENTTHREADED = 0x2, //Initializes the thread for apartment-threaded object concurrency
+		DISABLE_OLE1DDE =   0x4, //Disables DDE for OLE1 support
+		SPEED_OVER_MEMORY = 0x8, //Trade memory for speed
 	}
 
 	[Flags]
 	public enum CLSCTX : uint
 	{
-		CLSCTX_INPROC_SERVER          = 0x00001,
-		CLSCTX_INPROC_HANDLER         = 0x00002,
-		CLSCTX_LOCAL_SERVER           = 0x00004,
-		CLSCTX_INPROC_SERVER16        = 0x00008,
-		CLSCTX_REMOTE_SERVER          = 0x00010,
-		CLSCTX_INPROC_HANDLER16       = 0x00020,
-		CLSCTX_RESERVED1              = 0x00040,
-		CLSCTX_RESERVED2              = 0x00080,
-		CLSCTX_RESERVED3              = 0x00100,
-		CLSCTX_RESERVED4              = 0x00200,
-		CLSCTX_NO_CODE_DOWNLOAD       = 0x00400,
-		CLSCTX_RESERVED5              = 0x00800,
-		CLSCTX_NO_CUSTOM_MARSHAL      = 0x01000,
-		CLSCTX_ENABLE_CODE_DOWNLOAD   = 0x02000,
-		CLSCTX_NO_FAILURE_LOG         = 0x04000,
-		CLSCTX_DISABLE_AAA            = 0x08000,
-		CLSCTX_ENABLE_AAA             = 0x10000,
-		CLSCTX_FROM_DEFAULT_CONTEXT   = 0x20000,
-		CLSCTX_ACTIVATE_32_BIT_SERVER = 0x40000,
-		CLSCTX_ACTIVATE_64_BIT_SERVER = 0x80000,
-		CLSCTX_INPROC = CLSCTX_INPROC_SERVER|CLSCTX_INPROC_HANDLER,
-		CLSCTX_SERVER = CLSCTX_INPROC_SERVER|CLSCTX_LOCAL_SERVER|CLSCTX_REMOTE_SERVER,
-		CLSCTX_ALL    = CLSCTX_SERVER|CLSCTX_INPROC_HANDLER
+		INPROC_SERVER          = 0x00001,
+		INPROC_HANDLER         = 0x00002,
+		LOCAL_SERVER           = 0x00004,
+		INPROC_SERVER16        = 0x00008,
+		REMOTE_SERVER          = 0x00010,
+		INPROC_HANDLER16       = 0x00020,
+		RESERVED1              = 0x00040,
+		RESERVED2              = 0x00080,
+		RESERVED3              = 0x00100,
+		RESERVED4              = 0x00200,
+		NO_CODE_DOWNLOAD       = 0x00400,
+		RESERVED5              = 0x00800,
+		NO_CUSTOM_MARSHAL      = 0x01000,
+		ENABLE_CODE_DOWNLOAD   = 0x02000,
+		NO_FAILURE_LOG         = 0x04000,
+		DISABLE_AAA            = 0x08000,
+		ENABLE_AAA             = 0x10000,
+		FROM_DEFAULT_CONTEXT   = 0x20000,
+		ACTIVATE_32_BIT_SERVER = 0x40000,
+		ACTIVATE_64_BIT_SERVER = 0x80000,
+		INPROC = INPROC_SERVER | INPROC_HANDLER,
+		SERVER = INPROC_SERVER | LOCAL_SERVER | REMOTE_SERVER,
+		ALL    = SERVER | INPROC_HANDLER
 	}
 
 	[Flags]
-	public enum Format_Message_Flags : uint
+	public enum FormatMessageFlags : uint
 	{
 		ALLOCATE_BUFFER = 0x00000100,
 		IGNORE_INSERTS =  0x00000200,
@@ -289,4 +289,72 @@ namespace RndWallpaper
 		ARGUMENT_ARRAY =  0x00002000
 	}
 
+	public enum DisplayTechnologyType
+	{
+		ShadowMaskCathodeRayTube    = 0,
+		ApertureGrillCathodeRayTube = 1,
+		ThinFilmTransistor          = 2,
+		LiquidCrystalOnSilicon      = 3,
+		Plasma                      = 4,
+		OrganicLightEmittingDiode   = 5,
+		Electroluminescent          = 6,
+		Microelectromechanical      = 7,
+		FieldEmissionDevice         = 8
+	}
+
+	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+	public struct PHYSICAL_MONITOR
+	{
+		public IntPtr hPhysicalMonitor;
+		const int PhysicalMonitorDescriptionSize = 128;
+
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = PhysicalMonitorDescriptionSize)]
+		public string szPhysicalMonitorDescription;
+	}
+
+	[Flags]
+	public enum MC_CAPS : uint
+	{
+		None                                         = 0x0000,
+		MonitorTechnologyType                        = 0x0001,
+		Brightness                                   = 0x0002,
+		Contrast                                     = 0x0004,
+		ColorTemperature                             = 0x0008,
+		RedGreenBlueGain                             = 0x0010,
+		RedGreenBlueDrive                            = 0x0020,
+		Degauss                                      = 0x0040,
+		DisplayAreaPosition                          = 0x0080,
+		DisplayAreaSize                              = 0x0100,
+		//missing 0x200 (maybe reserved ?)
+		RestoreFactoryDefaults                       = 0x0400,
+		RestoreFactoryColorDefaults                  = 0x0800,
+		RestoreFactoryDefaultsEnablesMonitorSettings = 0x1000
+	}
+
+	public enum ColorTemperature : uint
+	{
+		TemperatureUnknown = 0,
+		Temperature4000K   = 1,
+		Temperature5000K   = 2,
+		Temperature6500K   = 3,
+		Temperature7500K   = 4,
+		Temperature8200K   = 5,
+		Temperature9300K   = 6,
+		Temperature10000K  = 7,
+		Temperature11500K  = 8
+	};
+
+	[Flags]
+	public enum ColorTemperatureSupported : uint
+	{
+		TemperatureNone   = 0x00,
+		Temperature4000K  = 0x01,
+		Temperature5000K  = 0x02,
+		Temperature6500K  = 0x04,
+		Temperature7500K  = 0x08,
+		Temperature8200K  = 0x10,
+		Temperature9300K  = 0x20,
+		Temperature10000K = 0x40,
+		Temperature11500K = 0x80
+	};
 }

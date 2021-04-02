@@ -47,7 +47,7 @@ publish() {
 	# https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
 	rid="$(_getrid)"
 	#change version number here
-	ver="1.0.2"
+	ver="1.0.3"
 
 	if [ -n "$rid" ]; then
 		_publishone "$(_getrid)" "$ver" "netcoreapp3.1"

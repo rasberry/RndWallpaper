@@ -9,12 +9,6 @@ namespace RndWallpaper
 	// porting Screen class instead of using Forms.Screen so I don't have to include all of Forms
 	public sealed class Screen
 	{
-		readonly IntPtr hmonitor;
-		readonly Rectangle bounds;
-		readonly bool primary;
-		readonly string deviceName;
-		readonly int bitDepth;
-
 		const int PRIMARY_MONITOR = unchecked((int)0xBAADF00D);
 		const int MONITOR_DEFAULTTONULL       = 0x00000000;
 		const int MONITOR_DEFAULTTOPRIMARY    = 0x00000001;
@@ -23,7 +17,6 @@ namespace RndWallpaper
 		const int SM_CMONITORS = 80;
 		const int SM_CXSCREEN =  0;
 		const int SM_CYSCREEN =  1;
-
 
 		readonly static HandleRef NullHandleRef = new HandleRef(null, IntPtr.Zero);
 		static bool multiMonitorSupport = (WinMethods.GetSystemMetrics(SM_CMONITORS) != 0);
@@ -41,10 +34,9 @@ namespace RndWallpaper
 			}
 			else {
 				var info = new MonitorInfoEx(); info.Init();
-				WinMethods.GetMonitorInfo(new HandleRef(null, monitor), ref info);
+				WinMethods.GetMonitorInfo(ToHR(monitor), ref info);
 				bounds = info.Monitor; //implicit conversion
 				primary = ((info.Flags & MONITORINFOF_PRIMARY) != 0);
-
 				deviceName = new string(info.DeviceName);
 				deviceName = deviceName.TrimEnd((char)0);
 
@@ -54,12 +46,20 @@ namespace RndWallpaper
 			}
 			hmonitor = monitor;
 
-			this.bitDepth = WinMethods.GetDeviceCaps(new HandleRef(null, screenDC), DeviceCap.BITSPIXEL);
-			this.bitDepth *= WinMethods.GetDeviceCaps(new HandleRef(null, screenDC), DeviceCap.PLANES);
+			this.bitDepth  = WinMethods.GetDeviceCaps(ToHR(screenDC), DeviceCap.BITSPIXEL);
+			this.bitDepth *= WinMethods.GetDeviceCaps(ToHR(screenDC), DeviceCap.PLANES);
+			this.vRfresh   = WinMethods.GetDeviceCaps(ToHR(screenDC), DeviceCap.VREFRESH);
+			this.pWidthMm  = WinMethods.GetDeviceCaps(ToHR(screenDC), DeviceCap.HORZSIZE);
+			this.pHeightMm = WinMethods.GetDeviceCaps(ToHR(screenDC), DeviceCap.VERTSIZE);
 
 			if (hdc != screenDC) {
-				WinMethods.DeleteDC(new HandleRef(null, screenDC));
+				WinMethods.DeleteDC(ToHR(screenDC));
 			}
+		}
+
+		static HandleRef ToHR(IntPtr ptr)
+		{
+			return new HandleRef(null,ptr);
 		}
 
 		public static Screen[] AllScreens {
@@ -100,10 +100,22 @@ namespace RndWallpaper
 			}
 		}
 
-		public int BitsPerPixel { get {	return bitDepth; } }
-		public Rectangle Bounds { get { return bounds; } }
-		public string DeviceName { get { return deviceName; } }
-		public bool Primary { get { return primary; } }
+		readonly IntPtr hmonitor;
+		readonly Rectangle bounds;
+		readonly bool primary;
+		readonly string deviceName;
+		readonly int bitDepth;
+		readonly int vRfresh;
+		readonly int pWidthMm;
+		readonly int pHeightMm;
+
+		public int BitsPerPixel     { get { return bitDepth; } }
+		public Rectangle Bounds     { get { return bounds; } }
+		public string DeviceName    { get { return deviceName; } }
+		public bool Primary         { get { return primary; } }
+		public int VerticalRefresh  { get { return vRfresh; } }
+		public int PhysicalWidthMm  { get { return pWidthMm; } }
+		public int PhysicalHeightMm { get { return pHeightMm; } }
 
 		class MonitorEnumCallback {
 			public List<Screen> ScreenList = new List<Screen>();

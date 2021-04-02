@@ -206,7 +206,7 @@ namespace RndWallpaper
 
 		void Init()
 		{
-			uint hr = WinMethods.CoInitializeEx(IntPtr.Zero, COINIT.COINIT_APARTMENTTHREADED);
+			uint hr = WinMethods.CoInitializeEx(IntPtr.Zero, COINIT.APARTMENTTHREADED);
 			HandleError(hr);
 
 			// DesktopWallpaper Class
@@ -218,7 +218,7 @@ namespace RndWallpaper
 			IntPtr ppv;
 
 			uint hResult = WinMethods.CoCreateInstance(
-				ref ClassId, IntPtr.Zero, CLSCTX.CLSCTX_LOCAL_SERVER, ref InterfaceId, out ppv);
+				ref ClassId, IntPtr.Zero, CLSCTX.LOCAL_SERVER, ref InterfaceId, out ppv);
 
 			HandleError(hResult);
 			Pointer = ppv;
@@ -273,6 +273,19 @@ namespace RndWallpaper
 			var func = Marshal.GetDelegateForFunctionPointer<IDesktopWallpaper_SetWallpaper>(vp);
 			uint hr = func(Pointer,monitorID,wallpaper);
 			HandleError(hr);
+		}
+
+		delegate uint IDesktopWallpaper_GetWallpaper(IntPtr thisPtr,
+			[MarshalAs(UnmanagedType.LPWStr)] string monitorID,
+			[Out][MarshalAs(UnmanagedType.LPWStr)] out string wallpaper
+		);
+		public string GetWallpaper(string monitorID)
+		{
+			var vp = GetComOffset(Pointer,ProcOffset.IDesktopWallpaper_GetWallpaper);
+			var func = Marshal.GetDelegateForFunctionPointer<IDesktopWallpaper_GetWallpaper>(vp);
+			uint hr = func(Pointer,monitorID,out string wallpaper);
+			HandleError(hr);
+			return wallpaper;
 		}
 
 		delegate uint IDesktopWallpaper_GetMonitorDevicePathAt(IntPtr thisPtr,
