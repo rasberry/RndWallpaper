@@ -16,11 +16,10 @@ namespace RndWallpaper
 				MainMain(args);
 			}
 			catch(Exception e) {
-				#if DEBUG
-				Log.Error(e.ToString());
-				#else
-				Log.Error(e.Message);
-				#endif
+				Log.Error(Options.ExtraDebugInfo
+					? e.ToString()
+					: e.Message
+				);
 			}
 		}
 

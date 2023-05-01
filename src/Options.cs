@@ -121,6 +121,10 @@ namespace RndWallpaper
 				return false;
 			}
 
+			if (p.Has("--debug").IsGood()) {
+				ExtraDebugInfo = true;
+			}
+
 			switch(SelectedAction) {
 				case PickAction.Wallpaper: return ParseWallpaper(p);
 				case PickAction.Info:      return ParseInfo(p);
@@ -238,5 +242,6 @@ namespace RndWallpaper
 		public static bool ShowWallInfo = false;
 		public static bool ShowFileInfo = false;
 		public static string OutputLocation = null;
+		public static bool ExtraDebugInfo = false;
 	}
 }
