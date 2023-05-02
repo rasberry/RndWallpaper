@@ -155,10 +155,6 @@ namespace RndWallpaper
 			return true;
 		}
 
-		static void DownloadWallpaper()
-		{
-		}
-
 		static void ShowInfo()
 		{
 			var sb = new StringBuilder();

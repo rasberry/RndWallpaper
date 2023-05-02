@@ -19,7 +19,7 @@ namespace RndWallpaper
 		const int SM_CYSCREEN =  1;
 
 		readonly static HandleRef NullHandleRef = new HandleRef(null, IntPtr.Zero);
-		static bool multiMonitorSupport = (WinMethods.GetSystemMetrics(SM_CMONITORS) != 0);
+		static readonly bool multiMonitorSupport = (WinMethods.GetSystemMetrics(SM_CMONITORS) != 0);
 		static Screen[] screens;
 
 		internal Screen(IntPtr monitor) : this(monitor, IntPtr.Zero) {}
@@ -44,7 +44,7 @@ namespace RndWallpaper
 					screenDC = WinMethods.CreateDC(deviceName, null, null, IntPtr.Zero);
 				}
 			}
-			hmonitor = monitor;
+			// hmonitor = monitor; //This isn't used for now
 
 			this.bitDepth  = WinMethods.GetDeviceCaps(ToHR(screenDC), DeviceCap.BITSPIXEL);
 			this.bitDepth *= WinMethods.GetDeviceCaps(ToHR(screenDC), DeviceCap.PLANES);
@@ -100,7 +100,6 @@ namespace RndWallpaper
 			}
 		}
 
-		readonly IntPtr hmonitor;
 		readonly Rectangle bounds;
 		readonly bool primary;
 		readonly string deviceName;

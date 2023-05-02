@@ -44,10 +44,9 @@ namespace RndWallpaper
 		///<summary>Gets the system message associated with an HResult</summary>
 		public static string MessageFromHResult(uint hResult)
 		{
-			string errorMsg;
 			StringBuilder sb = new StringBuilder(256);
 			do {
-				if (TryGetErrorMessage(hResult, sb, out errorMsg))
+				if (TryGetErrorMessage(hResult, sb, out string errorMsg))
 					return errorMsg;
 				else {
 					// increase the capacity of the StringBuilder by 4 times.
