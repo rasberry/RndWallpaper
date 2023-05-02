@@ -215,10 +215,9 @@ namespace RndWallpaper
 			// Guid InterfaceId = new Guid("B92B56A9-8B55-4E14-9A89-0199BBB6F93B");
 			// IDesktopWallPaperPrivate
 			Guid InterfaceId = new Guid("C182461F-DFAC-4375-AB6E-4CC45AA7F9CC");
-			IntPtr ppv;
 
 			uint hResult = WinMethods.CoCreateInstance(
-				ref ClassId, IntPtr.Zero, CLSCTX.LOCAL_SERVER, ref InterfaceId, out ppv);
+				ref ClassId, IntPtr.Zero, CLSCTX.LOCAL_SERVER, ref InterfaceId, out IntPtr ppv);
 
 			HandleError(hResult);
 			Pointer = ppv;
@@ -255,7 +254,7 @@ namespace RndWallpaper
 		}
 
 		delegate uint IUnknown_Release(IntPtr thisPtr);
-		void Release(IntPtr thisPtr)
+		void Release()
 		{
 			var vp = GetComOffset(Pointer,ProcOffset.IUnknown_Release);
 			var func = Marshal.GetDelegateForFunctionPointer<IUnknown_Release>(vp);
@@ -381,7 +380,7 @@ namespace RndWallpaper
 				}
 
 				//cleanup COM instance
-				Release(Pointer);
+				Release();
 				Pointer = IntPtr.Zero;
 
 				disposedValue = true;

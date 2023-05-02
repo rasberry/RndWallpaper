@@ -71,10 +71,10 @@ namespace RndWallpaper
 
 		public override bool Equals(object obj)
 		{
-			if (obj is RECT)
-			return Equals((RECT)obj);
-			else if (obj is System.Drawing.Rectangle)
-			return Equals(new RECT((System.Drawing.Rectangle)obj));
+			if (obj is RECT rECT)
+			return Equals(rECT);
+			else if (obj is System.Drawing.Rectangle rectangle)
+			return Equals(new RECT(rectangle));
 			return false;
 		}
 

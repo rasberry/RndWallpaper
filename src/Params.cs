@@ -19,14 +19,14 @@ namespace RndWallpaper
 			Args = new List<string>(args);
 		}
 
-		List<string> Args;
+		readonly List<string> Args;
 
 		public string[] Remaining()
 		{
 			return Args.ToArray();
 		}
 
-		// check for existance of a single parameter
+		// check for existence of a single parameter
 		public Result Has(params string[] @switch)
 		{
 			int ii = -1;
@@ -41,7 +41,7 @@ namespace RndWallpaper
 		}
 
 		// check for a non-qualified (leftover) parameter
-		public Result Default<T>(out T val, T def = default(T),Parser<T> par = null)
+		public Result Default<T>(out T val, T def = default,Parser<T> par = null)
 		{
 			val = def;
 			if (Args.Count <= 0) { return Result.Missing; }
@@ -55,7 +55,7 @@ namespace RndWallpaper
 		}
 
 		//find or default a parameter with one argument
-		public Result Default<T>(string @switch,out T val,T def = default(T),Parser<T> par = null,
+		public Result Default<T>(string @switch,out T val,T def = default,Parser<T> par = null,
 			bool logMessages = true)
 		{
 			val = def;
@@ -68,7 +68,6 @@ namespace RndWallpaper
 				return Result.Invalid;
 			}
 			if (par == null) { par = TryParse; }
-			bool worked = par(Args[i+1],out val);
 			if (!par(Args[i+1],out val)) {
 				if (logMessages) { Log.CouldNotParse(@switch,Args[i+1]); }
 				return Result.Invalid;
@@ -78,9 +77,9 @@ namespace RndWallpaper
 			return Result.Good;
 		}
 
-		public Result Default<T>(string[] @switch,out T val,T def = default(T),Parser<T> par = null)
+		public Result Default<T>(string[] @switch,out T val,T def = default,Parser<T> par = null)
 		{
-			val = default(T);
+			val = default;
 			Result rr = Result.Missing;
 			foreach(string sw in @switch) {
 				var r = Default<T>(sw,out val,def,par);
@@ -94,7 +93,7 @@ namespace RndWallpaper
 		//find or default a parameter with two arguments
 		//Condition function determines when second argument is required (defaults to always true)
 		public Result Default<T,U>(string @switch,out T tval, out U uval,
-			T tdef = default(T), U udef = default(U), Func<T,bool> Cond = null,
+			T tdef = default, U udef = default, Func<T,bool> Cond = null,
 			Parser<T> tpar = null, Parser<U> upar = null)
 		{
 			tval = tdef;
@@ -192,7 +191,7 @@ namespace RndWallpaper
 		// consolidated the tryparse here - trying to make the code a bit more portable
 		public static bool TryParse<V>(string sub, out V val)
 		{
-			val = default(V);
+			val = default;
 			Type t = typeof(V);
 
 			var nullType = Nullable.GetUnderlyingType(t);

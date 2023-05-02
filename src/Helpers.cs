@@ -54,7 +54,7 @@ namespace RndWallpaper
 			return Math.Min(al,wl);
 		}
 
-		public static IEnumerable<(string,string)> GetImageTags(string imagePath, IImageInfo info)
+		public static IEnumerable<(string,string)> GetImageTags(string imagePath, ImageInfo info)
 		{
 			string ext = Path.GetExtension(imagePath).ToLowerInvariant();
 			if (ext == ".png") {

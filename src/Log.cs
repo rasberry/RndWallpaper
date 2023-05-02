@@ -58,7 +58,7 @@ namespace RndWallpaper
 			Log.Error($"Image format '{ext}' is not supported");
 		}
 		public static void MustBeGreaterThanZero(string name, double num) {
-			Log.Error($"value for {name} must be greater than zero");
+			Log.Error($"value for {name} ({num}) must be greater than zero");
 		}
 	}
 }

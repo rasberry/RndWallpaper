@@ -7,9 +7,9 @@ namespace RndWallpaper
 	public static class OptionHelpers
 	{
 		public static IEnumerable<T> EnumAll<T>(bool includeZero = false)
-			where T : struct
+			where T : struct, Enum
 		{
-			foreach(T a in Enum.GetValues(typeof(T))) {
+			foreach(T a in Enum.GetValues<T>()) {
 				int v = (int)((object)a);
 				if (!includeZero && v == 0) { continue; }
 				yield return a;
@@ -17,7 +17,7 @@ namespace RndWallpaper
 		}
 
 		public static void PrintEnum<T>(this StringBuilder sb, int level = 0, Func<T,string> descriptionMap = null,
-			Func<T,string> nameMap = null, bool includeZero = false) where T : struct
+			Func<T,string> nameMap = null, bool includeZero = false) where T : struct, Enum
 		{
 			var allEnums = new List<T>(EnumAll<T>(includeZero));
 			var list = new List<(int,string,string)>();
@@ -44,7 +44,6 @@ namespace RndWallpaper
 				string pnum = items[i].Item1.ToString();
 				int lpad = pnum.Length < numDigits ? numDigits - pnum.Length : 0;
 				string npad = new string(' ',lpad);
-				var curr = items[i];
 				string pname = items[i].Item2 ?? "";
 				string pdsc = items[i].Item3 ?? "";
 				sb.WL(level,$"{npad}{pnum}. {pname}",pdsc);
@@ -141,13 +140,13 @@ namespace RndWallpaper
 			return false;
 		}
 
-		public static bool TryParseEnumFirstLetter<T>(string arg, out T val) where T : struct
+		public static bool TryParseEnumFirstLetter<T>(string arg, out T val) where T : struct, Enum
 		{
 			bool worked = Enum.TryParse<T>(arg,true,out val);
 			//try to match the first letter if normal enum parse fails
 			if (!worked) {
 				string f = arg.Substring(0,1);
-				foreach(T e in Enum.GetValues(typeof(T))) {
+				foreach(T e in Enum.GetValues<T>()) {
 					string name = e.ToString();
 					if (name.Equals("none",StringComparison.OrdinalIgnoreCase)) {
 						continue;
