@@ -72,44 +72,6 @@ public static class Options
 		return null;
 	}
 
-	// static bool SelectMonitor(PickMonitor pickMon)
-	// {
-	// 	var all = Screen.AllScreens;
-	// 	for(int m=0; m<all.Length; m++) {
-	// 		if (pickMon == PickMonitor.Primary && all[m].Primary) {
-	// 			MonitorId = all[m].DeviceName;
-	// 			pickMon = (PickMonitor)(m + 1); //use the real value now
-	// 			break;
-	// 		}
-	// 		if ((int)pickMon - 1 == m) {
-	// 			//only setting this to indicate that we found something
-	// 			MonitorId = all[m].DeviceName;
-	// 		}
-	// 	}
-	// 	if (MonitorId == null) {
-	// 		Log.MonitorInvalid(pickMon);
-	// 		return false;
-	// 	}
-
-	// 	using(var wp = new DesktopWallpaperClass()) {
-	// 		uint dcount = Helpers.GetMonitorCount(wp);
-	// 		for(uint m=0; m<dcount; m++) {
-	// 			string dname = wp.GetMonitorDevicePathAt(m);
-	// 			int dnum = wp.GetMonitorNumber(dname); // undocumented :-o
-	// 			if (dnum < 1 || dnum > dcount) {
-	// 				Log.InvalidMonitorNum(dnum);
-	// 				return false;
-	// 			}
-	// 			if (dnum == (int)pickMon) {
-	// 				MonitorId = dname;
-	// 				break;
-	// 			}
-	// 		}
-	// 	}
-
-	// 	return true;
-	// }
-
 	public static bool ParseArgs(string[] args)
 	{
 		var p = new Params(args);

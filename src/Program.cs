@@ -229,23 +229,6 @@ class Program
 		}
 	}
 
-	// static void ShowWallpaperInfo(int level, IDevice device, string iname, StringBuilder sb)
-	// {
-	// 	var all = device.AllMonitors;
-	// 	foreach(var m in all) {
-	// 		string wallpaper = device.GetWallPaper(m);
-	// 		sb.WL();
-	// 		sb.WL(level,"Interface:"   ,iname);
-	// 		sb.WL(level,"Device Name:" ,m.Name);
-	// 		sb.WL(level,"Path:"        ,wallpaper);
-
-	// 		//TODO this is really verbose so might remove it
-	// 		// if (Options.ShowInfo.HasFlag(Options.PickShowInfo.File)) {
-	// 		// 	ShowFileInfo(sb,level,wallpaper);
-	// 		// }
-	// 	}
-	// }
-
 	static void ShowFileInfo(StringBuilder sb, int level, string wallpaper)
 	{
 		if (!File.Exists(wallpaper)) {

@@ -50,21 +50,6 @@ public static class OptionHelpers
 		}
 	}
 
-	// public static void PrintMonitors(this StringBuilder sb, int level = 0)
-	// {
-	// 	var all = Screen.AllScreens;
-	// 	var list = new List<(int,string,string)>();
-
-	// 	for(int i=0; i<all.Length; i++) {
-	// 		var s = all[i];
-	// 		string name = $"{s.DeviceName} {(s.Primary ? "(Primary)" : "")}";
-	// 		string desc = $"Depth:{s.BitsPerPixel} Size:{s.Bounds}";
-	// 		list.Add((i+1,name,desc));
-	// 	}
-	// 	sb.WL(level,"Primary","Select the primary monitor");
-	// 	sb.PrintListWithBullets(list,level);
-	// }
-
 	const int OriginalColumnOffset = 40;
 	static int ColumnOffset = OriginalColumnOffset;
 	public static StringBuilder WLOffset(this StringBuilder sb, int? offset = null)

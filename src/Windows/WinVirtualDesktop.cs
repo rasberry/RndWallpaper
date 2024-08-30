@@ -1,5 +1,3 @@
-
-// https://github.com/MScholtes/VirtualDesktop
 using System;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -34,8 +32,6 @@ internal static class Guids
 {
 	public static readonly Guid CLSID_ImmersiveShell = new Guid("C2F03A33-21F5-47FA-B4BB-156362A2F239");
 	public static readonly Guid CLSID_VirtualDesktopManagerInternal = new Guid("C5E0CDCA-7B6E-41B2-9FC4-D93975CC467B");
-	//public static readonly Guid CLSID_VirtualDesktopManager = new Guid("AA509086-5CA9-4C25-8F95-589D3C07B48A");
-	//public static readonly Guid CLSID_VirtualDesktopPinnedApps = new Guid("B5A399E7-1C87-46B8-88E9-FC5747B171BD");
 }
 
 [ComImport]

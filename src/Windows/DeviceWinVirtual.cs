@@ -14,10 +14,6 @@ public sealed class DeviceWinVirtual : IDevice, IDisposable
 	{
 		var shell = (IServiceProvider10)Activator.CreateInstance(Type.GetTypeFromCLSID(Guids.CLSID_ImmersiveShell));
 		VirtualDesktopManagerInternal = (IVirtualDesktopManagerInternal)shell.QueryService(Guids.CLSID_VirtualDesktopManagerInternal, typeof(IVirtualDesktopManagerInternal).GUID);
-		//VirtualDesktopManager = (IVirtualDesktopManager)Activator.CreateInstance(Type.GetTypeFromCLSID(Guids.CLSID_VirtualDesktopManager));
-		//ApplicationViewCollection = (IApplicationViewCollection)shell.QueryService(typeof(IApplicationViewCollection).GUID, typeof(IApplicationViewCollection).GUID);
-		//VirtualDesktopPinnedApps = (IVirtualDesktopPinnedApps)shell.QueryService(Guids.CLSID_VirtualDesktopPinnedApps, typeof(IVirtualDesktopPinnedApps).GUID);
-
 	}
 
 	public IReadOnlyList<IMonitor> AllMonitors { get; } = new VirtualList();
@@ -57,9 +53,6 @@ public sealed class DeviceWinVirtual : IDevice, IDisposable
 	}
 
 	internal static IVirtualDesktopManagerInternal VirtualDesktopManagerInternal;
-	//internal static IVirtualDesktopManager VirtualDesktopManager;
-	//internal static IApplicationViewCollection ApplicationViewCollection;
-	//internal static IVirtualDesktopPinnedApps VirtualDesktopPinnedApps;
 
 	class VirtualList : IReadOnlyList<IMonitor>
 	{
