@@ -31,7 +31,7 @@ _publishone() {
 
 	# do a build / publish with RID
 	exec 5>&1
-	out=$(dotnet publish -r "$1" -c release|tee /dev/fd/5)
+	out=$(dotnet publish -r "$1" -c release -p:Version=$ver|tee /dev/fd/5)
 	if [[ $? != 0 ]]; then return; fi
 
 	while read -r line
@@ -54,7 +54,7 @@ publish() {
 	# https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
 	rid="$(_getrid)"
 	#change version number here
-	ver="1.0.4"
+	ver="2.0.0"
 
 	if [ -n "$rid" ]; then
 		_publishone "$(_getrid)" "$ver" "net7.0"

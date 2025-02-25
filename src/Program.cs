@@ -3,263 +3,288 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using RndWallpaper.Windows;
 using SixLabors.ImageSharp;
 
-namespace RndWallpaper
+namespace RndWallpaper;
+
+class Program
 {
-	class Program
+	[STAThread]
+	static void Main(string[] args)
 	{
-		[STAThread]
-		static void Main(string[] args)
-		{
-			try {
-				MainMain(args);
-			}
-			catch(Exception e) {
-				Log.Error(Options.ExtraDebugInfo
-					? e.ToString()
-					: e.Message
-				);
+		//Test(); return;
+
+		try {
+			MainMain(args);
+		}
+		catch(Exception e) {
+			Log.Error(Options.ExtraDebugInfo
+				? e.ToString()
+				: e.Message
+			);
+		}
+	}
+
+	static void MainMain(string[] args)
+	{
+		if (args.Length < 1) {
+			Options.Usage();
+			return;
+		}
+		if (!Options.ParseArgs(args)) {
+			return;
+		}
+
+		using var cache = new DeviceCache();
+		if (Options.ShowInfo) {
+			ShowInfo(cache);
+			return;
+		}
+
+		if (Options.DelayMS > 0) {
+			Log.SettingBackgroundDelay(Options.DelayMS);
+			System.Threading.Thread.Sleep(Options.DelayMS);
+		}
+
+		var device = cache.GetDevice(Options.SelectedDevice);
+		ChangeBackground(device);
+	}
+
+	static void ChangeBackground(IDevice device)
+	{
+		int dcount = device.AllMonitors.Count;
+		if (dcount < 1) {
+			Log.NoMonitors();
+			return;
+		}
+
+		if (!FillPlan(dcount,out string[] thePlan)) {
+			return;
+		}
+
+		if (Options.DetectPanorama) {
+			var info = Image.Identify(thePlan[0]);
+			double iRatio = (double)info.Width / info.Height;
+			// Log.Debug($"ratio is {iRatio} vs {Options.PanoramaRatio}");
+			if (iRatio > Options.PanoramaRatio) {
+				Options.Style = PickWallpaperStyle.Span;
 			}
 		}
 
-		static void MainMain(string[] args)
-		{
-			if (args.Length < 1) {
-				Options.Usage();
-				return;
-			}
-			if (!Options.ParseArgs(args)) {
-				return;
-			}
-
-			switch(Options.SelectedAction) {
-				case PickAction.Wallpaper: {
-					using(var wp = new DesktopWallpaperClass()) {
-						ChangeBackground(wp);
-					}; break;
-				}
-				// case PickAction.Download:
-				// 	DownloadWallpaper();
-				// 	break;
-				case PickAction.Info:
-					ShowInfo();
-					break;
-				#if DEBUG
-				case PickAction.Test:
-					Test();
-					break;
-				#endif
-			}
-		}
-
-		static void ChangeBackground(DesktopWallpaperClass wp)
-		{
-			uint dcount = Helpers.GetMonitorCount(wp);
-			if (dcount < 1) {
-				Log.NoMonitors();
-				return;
-			}
-
-			if (!FillPlan(dcount,out string[] thePlan)) {
-				return;
-			}
-
-			if (Options.DetectPanorama) {
-				var info = Image.Identify(thePlan[0]);
-				double iRatio = (double)info.Width / info.Height;
-				// Log.Debug($"ratio is {iRatio} vs {Options.PanoramaRatio}");
-				if (iRatio > Options.PanoramaRatio) {
-					Options.Style = PickWallpaperStyle.Span;
-				}
-			}
-
-			if (Options.DelayMS > 0) {
-				Log.SettingBackgroundDelay(Options.DelayMS);
-				System.Threading.Thread.Sleep(Options.DelayMS);
-			}
-
+		//span uses only the first image
+		if (Options.Style == PickWallpaperStyle.Span) {
 			Log.SettingStyle(Options.Style);
-			wp.SetPosition(Helpers.MapStyle(Options.Style));
+			device.SetStyle(Options.Style);
 
-			//span uses only the first image
-			if (Options.Style == PickWallpaperStyle.Span) {
-				Log.SettingBackground(1,thePlan[0]);
-				wp.SetWallpaper(null,thePlan[0]);
+			Log.SettingBackground("Span",0,thePlan[0]);
+			device.SetWallPaperAll(thePlan[0]);
+		}
+		//all monitors
+		else if (Options.Monitor == PickMonitor.All) {
+			Log.SettingStyle(Options.Style);
+			device.SetStyle(Options.Style);
+
+			for(int m = 0; m<dcount; m++) {
+				if (thePlan[m] == null) { continue; }
+				var mon = device.AllMonitors[m];
+				Log.SettingBackground(mon.Name,m,thePlan[0]);
+				device.SetWallPaper(mon, thePlan[m]);
 			}
-			//all monitors
-			else if (Options.Monitor == PickMonitor.All) {
-				for(uint m=0; m<dcount; m++) {
-					if (thePlan[m] == null) { continue; }
-					string mname = wp.GetMonitorDevicePathAt(m);
-					Log.SettingBackground(m + 1,thePlan[m]);
-					wp.SetWallpaper(mname,thePlan[m]);
-				}
+		}
+		//selected monitor
+		else {
+			if (!Helpers.TrySelectMonitorByName(device, Options.Monitor, Options.MonitorName, out var index)) {
+				return;
 			}
-			//selected monitor
+			
+			if (index < 0 || index >= dcount) {
+				Log.InvalidMonitorNum(index);
+			}
+			var mon = device.AllMonitors[index];
+			var file = thePlan[index];
+			Log.SettingBackground(mon.Name,index,file);
+			device.SetWallPaper(mon,file);
+		}
+	}
+
+	static bool FillPlan(int monitorCount, out string[] thePlan)
+	{
+		thePlan = new string[monitorCount];
+		var list = Options.PicPaths;
+		var imgList = new List<string>();
+
+		var op = new EnumerationOptions {
+			RecurseSubdirectories = Options.RecurseFolder
+		};
+
+		//go backwards so we can append items
+		foreach(string path in list) {
+			if (Directory.Exists(path)) {
+				//expand folder into files
+				var rawList = Directory.GetFiles(path,"*.*",op);
+				var fileList = rawList.Where(file => Helpers.IsFileSupported(file));
+				imgList.AddRange(fileList);
+			}
 			else {
-				int dnum = wp.GetMonitorNumber(Options.MonitorId);
-				if (dnum < 1 || dnum > dcount) {
-					Log.InvalidMonitorNum(dnum);
+				//already a file so just check if it's supported
+				if (!Helpers.IsFileSupported(path)) {
+					string ext = Path.GetExtension(path);
+					Log.FormatNotSupported(ext);
+					return false;
 				}
-				string file = thePlan[dnum - 1];
-				Log.SettingBackground((uint)dnum,file);
-				wp.SetWallpaper(Options.MonitorId,file);
+				imgList.Add(path);
 			}
 		}
 
-		static bool FillPlan(uint monitorCount, out string[] thePlan)
-		{
-			thePlan = new string[monitorCount];
-			var list = Options.PicPaths;
-			var imgList = new List<string>();
-
-			var op = new EnumerationOptions {
-				RecurseSubdirectories = Options.RecurseFolder
-			};
-
-			//go backwards so we can append items
-			foreach(string path in list) {
-				if (Directory.Exists(path)) {
-					//expand folder into files
-					var rawList = Directory.GetFiles(path,"*.*",op);
-					var fileList = rawList.Where(file => Helpers.IsFileSupported(file));
-					imgList.AddRange(fileList);
-				}
-				else {
-					//already a file so just check if it's supported
-					if (!Helpers.IsFileSupported(path)) {
-						string ext = Path.GetExtension(path);
-						Log.FormatNotSupported(ext);
-						return false;
-					}
-					imgList.Add(path);
-				}
-			}
-
-			int count = imgList.Count;
-			if (count < 1) {
-				Log.NoImagesFound();
-				return false;
-			}
-
-			var rnd = Options.RndSeed.HasValue ? new Random(Options.RndSeed.Value) : new Random();
-			int index = 0;
-			for(int i=0; i<monitorCount; i++) {
-				if (!Options.UseSameImage || i == 0) {
-					index = rnd.Next(count);
-				}
-				thePlan[i] = imgList[index];
-			}
-
-			return true;
+		int count = imgList.Count;
+		if (count < 1) {
+			Log.NoImagesFound();
+			return false;
 		}
 
-		static void ShowInfo()
-		{
-			var sb = new StringBuilder();
-			if (Options.ShowMonitorInfo) {
-				sb.WL(0,"Monitor Information:");
-				ShowMonitorInfo(1,sb);
+		var rnd = Options.RndSeed.HasValue ? new Random(Options.RndSeed.Value) : new Random();
+		int index = 0;
+		for(int i=0; i<monitorCount; i++) {
+			if (!Options.UseSameImage || i == 0) {
+				index = rnd.Next(count);
 			}
+			thePlan[i] = imgList[index];
+		}
 
-			if (Options.ShowWallInfo) {
-				sb.WL(0,"Wallpaper Information:");
-				ShowWallpaperInfo(1,sb);
+		return true;
+	}
+
+	const int InfoOffset = 30;
+	static void ShowInfo(DeviceCache cache)
+	{
+		//bool isFirst = true;
+		var sb = new StringBuilder();
+		sb.WLOffset(InfoOffset);
+		//if (Options.ShowInfo.HasFlag(Options.PickShowInfo.Monitor)) {
+			sb.WL(0,"Monitor Information:");
+			foreach(var (iname,dev) in LoopDevices(cache)) {
+				Log.Debug($"iname={iname} dev={(dev==null?"null":"good")}");
+				ShowMonitorInfo(1,dev,iname,sb);
+			}
+			//isFirst = false;
+		//}
+
+		// if (Options.ShowInfo.HasFlag(Options.PickShowInfo.Wall)) {
+		// 	if (!isFirst) { sb.WL(); }
+		// 	sb.WL(0,"Wallpaper Information:");
+		// 	foreach(var (iname,dev) in LoopDevices(cache)) {
+		// 		ShowWallpaperInfo(1,dev,iname,sb);
+		// 	}
+		// 	isFirst = false;
+		// }
+
+		sb.WLOffset();
+		Log.Message(sb.ToString());
+	}
+
+	static IEnumerable<(string,IDevice)> LoopDevices(DeviceCache cache)
+	{
+		var platforms = Helpers.GetAvailablePlatformDevices();
+		foreach(var p in platforms) {
+			var dev = cache.GetDevice(p);
+			if (dev == null) { continue; }
+			var iname = Options.NiceDeviceName(p);
+			yield return (iname,dev);
+		}
+	}
+
+	static void ShowMonitorInfo(int level, IDevice device, string iname, StringBuilder sb)
+	{
+		var all = device.AllMonitors;
+		for(int m = 0; m < all.Count; m++) {
+			var current = all[m];
+			string wallpaper = device.GetWallPaper(current);
+
+			sb.WL();
+			sb.WL(level,"Interface:", iname);
+			sb.WL(level,"Device Name:", current.Name);
+			sb.WL(level,"Device Index:", m.ToString());
+			sb.WL(level,"Is Primary:", current.IsPrimary ? "Yes" : "No");
+			if (current.BitsPerPixel != null) {
+				sb.WL(level,"Bits per pixel:", current.BitsPerPixel);
+			}
+			if (current.Dimensions != null) {
+				var dim = current.Dimensions.Value;
+				sb.WL(level,"Width:", dim.Width);
+				sb.WL(level,"Height:", dim.Height);
+				sb.WL(level,"X Offset:", dim.X);
+				sb.WL(level,"Y Offset:", dim.Y);
+			}
+			if (current.PhysicalWidthMm != null) {
+				sb.WL(level,"Physical Width (mm)", current.PhysicalWidthMm);
+			}
+			if (current.PhysicalHeightMm != null) {
+				sb.WL(level,"Physical Height (mm)", current.PhysicalHeightMm);
+			}
+			if (current.VerticalRefresh != null) {
+				sb.WL(level,"Vertical Refresh (Hz)", current.VerticalRefresh);
+			}
+			sb.WL(level,"Image Path:", wallpaper);
+		}
+	}
+
+	static void ShowFileInfo(StringBuilder sb, int level, string wallpaper)
+	{
+		if (!File.Exists(wallpaper)) {
+			sb.WL(level,"[Unable to find image on disk]");
+			return;
+		}
+
+		var info = Image.Identify(wallpaper);
+		sb.WL(level,"Image Width:"           ,info.Width);
+		sb.WL(level,"Image Height:"          ,info.Height);
+		sb.WL(level,"Image Bits per pixel:"  ,info.PixelType.BitsPerPixel);
+
+		var meta = Helpers.GetImageTags(wallpaper,info);
+		if (meta.Any()) {
+			sb.WL();
+			sb.WL(level,"Metadata:");
+
+			foreach(var kvp in meta) {
+				sb.WL(level + 1,kvp.Item1,kvp.Item2);
+			}
+		}
+	}
+
+	#if DEBUG
+	static void Test()
+	{
+
+		var sb = new StringBuilder();
+		ShowFileInfo(sb,0,"D:\\Anders\\Pictures\\Backgrounds\\abstract\\gXLcYNz - Imgur.jpg");
+		Log.Message(sb.ToString());
+	}
+
+	static void TestPrintMeta()
+	{
+		foreach(string p in Options.PicPaths) {
+			if (!File.Exists(p)) {
+				Log.Message($"{p} does not exist");
+				continue;
+			}
+			Log.Message($"# file {p}");
+
+			var info = Image.Identify(p);
+			if (info == null) { continue; }
+			Log.Message($"dims are {info.Width}x{info.Height}");
+			var meta = Helpers.GetImageTags(p,info);
+			StringBuilder sb = new StringBuilder();
+
+			if (meta.Any()) {
+				sb.WL(0,"Metadata:");
+				foreach(var kvp in meta) {
+					sb.WL(1,kvp.Item1,kvp.Item2);
+				}
 			}
 
 			Log.Message(sb.ToString());
 		}
-
-		static void ShowMonitorInfo(int level, StringBuilder sb)
-		{
-			var all = Screen.AllScreens;
-			for(int m = 0; m < all.Length; m++) {
-				var current = all[m];
-				sb.WL();
-				sb.WL(level,"Device Name:"         ,current.DeviceName);
-				sb.WL(level,"Is Primary:"          ,current.Primary ? "Yes" : "No");
-				sb.WL(level,"Bits per pixel:"      ,current.BitsPerPixel);
-				sb.WL(level,"Width:"               ,current.Bounds.Width);
-				sb.WL(level,"Height:"              ,current.Bounds.Height);
-				sb.WL(level,"X Offset:"            ,current.Bounds.X);
-				sb.WL(level,"Y Offset:"            ,current.Bounds.Y);
-				sb.WL(level,"Physical Width (mm)"  ,current.PhysicalWidthMm);
-				sb.WL(level,"Physical Height (mm)" ,current.PhysicalHeightMm);
-				sb.WL(level,"Vertical Refresh (Hz)",current.VerticalRefresh);
-			}
-		}
-
-		static void ShowWallpaperInfo(int level, StringBuilder sb)
-		{
-			var all = Screen.AllScreens;
-			using(var wp = new DesktopWallpaperClass()) {
-				uint count = Helpers.GetMonitorCount(wp);
-
-				for(uint m=0; m<count; m++) {
-					string mpath = wp.GetMonitorDevicePathAt(m);
-					string wallpaper = wp.GetWallpaper(mpath);
-
-					sb.WL();
-					sb.WL(level,"Device Name:" ,all[m].DeviceName);
-					sb.WL(level,"Path:"        ,wallpaper);
-
-					if (Options.ShowFileInfo) {
-						ShowFileInfo(sb,level,wallpaper);
-					}
-				}
-			};
-		}
-
-		static void ShowFileInfo(StringBuilder sb, int level, string wallpaper)
-		{
-			if (!File.Exists(wallpaper)) {
-				sb.WL(level,"[Unable to find image on disk]");
-				return;
-			}
-
-			var info = Image.Identify(wallpaper);
-			sb.WL(level,"Image Width:"           ,info.Width);
-			sb.WL(level,"Image Height:"          ,info.Height);
-			sb.WL(level,"Image Bits per pixel:"  ,info.PixelType.BitsPerPixel);
-
-			var meta = Helpers.GetImageTags(wallpaper,info);
-			if (meta.Any()) {
-				sb.WL();
-				sb.WL(level,"Metadata:");
-
-				foreach(var kvp in meta) {
-					sb.WL(level + 1,kvp.Item1,kvp.Item2);
-				}
-			}
-		}
-
-		#if DEBUG
-		static void Test()
-		{
-			foreach(string p in Options.PicPaths) {
-				if (!File.Exists(p)) {
-					Log.Message($"{p} does not exist");
-					continue;
-				}
-				Log.Message($"# file {p}");
-
-				var info = Image.Identify(p);
-				if (info == null) { continue; }
-				Log.Message($"dims are {info.Width}x{info.Height}");
-				var meta = Helpers.GetImageTags(p,info);
-				StringBuilder sb = new StringBuilder();
-
-				if (meta.Any()) {
-					sb.WL(0,"Metadata:");
-					foreach(var kvp in meta) {
-						sb.WL(1,kvp.Item1,kvp.Item2);
-					}
-				}
-
-				Log.Message(sb.ToString());
-			}
-		}
-		#endif
 	}
+	#endif
 }
