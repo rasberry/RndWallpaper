@@ -6,9 +6,7 @@ A utility for changing the desktop background image for in Windows
 RndWallpaper [options] (file or folder) [ .. additional files and/or folders .. ]
 
 Informational:
- -i                                     Show all information
- -im                                    Show monitor information
- -iw                                    Show current wallpapers
+ -i                                     Show monitor information
 
 Wallpaper:
  -d  (interface)                        Choose which interface to use
