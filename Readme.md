@@ -51,3 +51,8 @@ Available Interfaces:
 * maybe add support for custom fitting options
   * not sure what those would be
   * seam carving resize ?
+
+## Notes ##
+* Virtual desktop interfaces constantly change :'( see these projects:
+  * https://github.com/slnz00/VirtualDesktopDumper/tree/master
+  * https://github.com/MScholtes/VirtualDesktop
